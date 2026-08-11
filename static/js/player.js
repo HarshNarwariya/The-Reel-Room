@@ -1,17 +1,19 @@
 (function () {
     "use strict";
 
-    const container = document.getElementById("player-container");
+    var container = document.getElementById("player-container");
     if (!container) return;
 
-    const mediaId = container.dataset.mediaId;
-    const mediaType = container.dataset.mediaType;
-    const updateUrl = container.dataset.updateUrl;
-    const startPosition = parseFloat(container.dataset.position) || 0;
-    const element = document.getElementById("media-element");
+    var mediaId = container.dataset.mediaId;
+    var mediaType = container.dataset.mediaType;
+    var updateUrl = container.dataset.updateUrl;
+    var startPosition = parseFloat(container.dataset.position) || 0;
+    var element = document.getElementById("media-element");
+    var vinyl = document.getElementById("vinylDisc");
+    var plyrInstance = null;
 
     function getCsrfToken() {
-        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        var match = document.cookie.match(/csrftoken=([^;]+)/);
         return match ? decodeURIComponent(match[1]) : "";
     }
 
@@ -32,42 +34,135 @@
         });
     }
 
-    if (element && (mediaType === "video" || mediaType === "audio")) {
-        const vinyl = document.getElementById("vinylDisc");
+    function getMediaElement() {
+        return plyrInstance ? plyrInstance.media : element;
+    }
 
-        function syncVinyl() {
-            if (!vinyl) return;
-            vinyl.classList.toggle("spinning", !element.paused && !element.ended);
+    function syncVinyl(playing) {
+        if (!vinyl) return;
+        vinyl.classList.toggle("spinning", playing);
+    }
+
+    function bindProgressTracking() {
+        var media = getMediaElement();
+        if (!media) return;
+
+        var lastSaved = 0;
+
+        function onLoaded() {
+            if (startPosition > 0 && startPosition < media.duration) {
+                if (plyrInstance) {
+                    plyrInstance.currentTime = startPosition;
+                } else {
+                    media.currentTime = startPosition;
+                }
+            }
         }
 
-        element.addEventListener("play", syncVinyl);
-        element.addEventListener("pause", syncVinyl);
-        element.addEventListener("ended", syncVinyl);
-
-        element.addEventListener("loadedmetadata", function () {
-            if (startPosition > 0 && startPosition < element.duration) {
-                element.currentTime = startPosition;
-            }
-        });
-
-        let lastSaved = 0;
-        element.addEventListener("timeupdate", function () {
-            const now = Math.floor(element.currentTime);
+        function onTimeUpdate() {
+            var current = plyrInstance ? plyrInstance.currentTime : media.currentTime;
+            var now = Math.floor(current);
             if (now - lastSaved >= 5) {
                 lastSaved = now;
-                saveProgress(element.currentTime, false);
+                saveProgress(current, false);
             }
-        });
+        }
 
-        element.addEventListener("ended", function () {
-            saveProgress(element.duration || 0, true);
-        });
+        function onEnded() {
+            var duration = plyrInstance ? plyrInstance.duration : media.duration;
+            saveProgress(duration || 0, true);
+            syncVinyl(false);
+        }
+
+        function onPlay() {
+            syncVinyl(true);
+        }
+
+        function onPause() {
+            syncVinyl(false);
+        }
+
+        if (plyrInstance) {
+            plyrInstance.on("loadedmetadata", onLoaded);
+            plyrInstance.on("timeupdate", onTimeUpdate);
+            plyrInstance.on("ended", onEnded);
+            plyrInstance.on("play", onPlay);
+            plyrInstance.on("pause", onPause);
+        } else {
+            media.addEventListener("loadedmetadata", onLoaded);
+            media.addEventListener("timeupdate", onTimeUpdate);
+            media.addEventListener("ended", onEnded);
+            media.addEventListener("play", onPlay);
+            media.addEventListener("pause", onPause);
+        }
 
         window.addEventListener("beforeunload", function () {
-            if (!element.paused && !element.ended) {
-                saveProgress(element.currentTime, false);
+            var current = plyrInstance ? plyrInstance.currentTime : media.currentTime;
+            var paused = plyrInstance ? plyrInstance.paused : media.paused;
+            var ended = plyrInstance ? plyrInstance.ended : media.ended;
+            if (!paused && !ended) {
+                saveProgress(current, false);
             }
         });
+    }
+
+    function bindEpisodeShortcuts() {
+        document.addEventListener("keydown", function (e) {
+            if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+            if (e.shiftKey && e.key === "ArrowLeft" && container.dataset.prevUrl) {
+                window.location.href = container.dataset.prevUrl;
+            }
+            if (e.shiftKey && e.key === "ArrowRight" && container.dataset.nextUrl) {
+                window.location.href = container.dataset.nextUrl;
+            }
+        });
+    }
+
+    if (element && (mediaType === "video" || mediaType === "audio") && typeof Plyr !== "undefined") {
+        var poster = element.getAttribute("data-poster");
+        var options = {
+            seekTime: 10,
+            keyboard: { focused: true, global: mediaType === "video" },
+            tooltips: { controls: true, seek: true },
+            clickToPlay: true,
+            hideControls: true,
+            resetOnEnd: false,
+        };
+
+        if (mediaType === "video") {
+            options.controls = [
+                "play-large",
+                "play",
+                "progress",
+                "current-time",
+                "duration",
+                "mute",
+                "volume",
+                "settings",
+                "pip",
+                "airplay",
+                "fullscreen",
+            ];
+            if (poster) {
+                options.poster = poster;
+            }
+        } else {
+            options.controls = [
+                "play",
+                "progress",
+                "current-time",
+                "duration",
+                "mute",
+                "volume",
+            ];
+        }
+
+        plyrInstance = new Plyr(element, options);
+        bindProgressTracking();
+        bindEpisodeShortcuts();
+    } else if (element && (mediaType === "video" || mediaType === "audio")) {
+        bindProgressTracking();
+        bindEpisodeShortcuts();
     } else if (mediaType === "image" || mediaType === "text") {
         saveProgress(0, true);
     }

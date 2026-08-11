@@ -1,0 +1,123 @@
+/* Plyr theme — Reel Room amber archive palette */
+
+.reel-player {
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: #000;
+}
+
+.reel-player--video {
+    background: var(--ink-2);
+}
+
+.reel-player--video .filmstrip {
+    height: 14px;
+    background: repeating-linear-gradient(90deg, var(--ink-3) 0 8px, #0c0b09 8px 10px);
+    border-top: 1px solid var(--line);
+}
+
+.reel-player--audio {
+    width: 100%;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin-top: 8px;
+}
+
+.reel-player .plyr {
+    --plyr-color-main: var(--amber);
+    --plyr-video-background: #0c0b09;
+    --plyr-audio-controls-background: var(--ink-3);
+    --plyr-menu-background: var(--ink-2);
+    --plyr-menu-color: var(--paper);
+    --plyr-font-family: 'Public Sans', sans-serif;
+    --plyr-font-size-base: 14px;
+    --plyr-font-size-small: 12px;
+    --plyr-font-size-time: 12px;
+    --plyr-control-spacing: 10px;
+    --plyr-control-radius: 3px;
+    --plyr-video-control-color: var(--paper);
+    --plyr-audio-control-color: var(--paper);
+    --plyr-range-fill-background: var(--amber);
+    --plyr-range-track-background: rgba(236, 230, 214, 0.18);
+    --plyr-progress-loading-background: rgba(236, 230, 214, 0.12);
+    --plyr-tooltip-background: var(--ink-2);
+    --plyr-tooltip-color: var(--paper);
+    --plyr-badge-background: var(--amber);
+    --plyr-badge-text-color: var(--ink);
+    --plyr-captions-background: rgba(20, 18, 16, 0.85);
+    --plyr-captions-text-color: var(--paper);
+}
+
+.reel-player--video .plyr {
+    border-radius: 0;
+}
+
+.reel-player--video .plyr--video {
+    max-height: 62vh;
+}
+
+.reel-player--video .plyr__video-wrapper {
+    background: #0c0b09;
+}
+
+.reel-player--audio .plyr--audio .plyr__controls {
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    padding: 14px 16px;
+}
+
+.reel-player--audio .plyr__control--overlaid,
+.reel-player--video .plyr__control--overlaid {
+    background: rgba(20, 18, 16, 0.78);
+    border: 1px solid var(--line-strong);
+    color: var(--paper);
+}
+
+.reel-player--video .plyr__control--overlaid:hover {
+    background: rgba(20, 18, 16, 0.92);
+    border-color: var(--amber);
+}
+
+.reel-player .plyr__control:hover {
+    background: rgba(226, 161, 58, 0.15);
+}
+
+.reel-player .plyr__control[aria-expanded="true"] {
+    background: rgba(226, 161, 58, 0.2);
+}
+
+.reel-player .plyr__menu__container .plyr__control {
+    color: var(--paper-dim);
+}
+
+.reel-player .plyr__menu__container .plyr__control:hover {
+    color: var(--paper);
+    background: rgba(226, 161, 58, 0.1);
+}
+
+.reel-player .plyr__time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+}
+
+.reel-player .plyr__progress__buffer {
+    color: rgba(236, 230, 214, 0.25);
+}
+
+.reel-player .plyr__volume {
+    max-width: 90px;
+}
+
+@media (max-width: 640px) {
+    .reel-player--video .plyr--video {
+        max-height: 50vh;
+    }
+
+    .reel-player .plyr__volume {
+        max-width: 70px;
+    }
+}
