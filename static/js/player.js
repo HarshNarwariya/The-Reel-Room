@@ -43,6 +43,63 @@
         vinyl.classList.toggle("spinning", playing);
     }
 
+    function bindBufferingLoader() {
+        var loader = document.getElementById("mediaLoader");
+        var loaderLabel = document.getElementById("mediaLoaderLabel");
+        if (!loader) return;
+
+        function setLoading(active, message) {
+            loader.classList.toggle("is-active", active);
+            loader.setAttribute("aria-hidden", active ? "false" : "true");
+            if (message && loaderLabel) {
+                loaderLabel.textContent = message;
+            }
+        }
+
+        function bindEvent(eventName, handler) {
+            if (plyrInstance) {
+                plyrInstance.on(eventName, handler);
+            } else if (element) {
+                element.addEventListener(eventName, handler);
+            }
+        }
+
+        bindEvent("loadstart", function () {
+            setLoading(true, "Loading…");
+        });
+
+        bindEvent("waiting", function () {
+            setLoading(true, "Buffering…");
+        });
+
+        bindEvent("seeking", function () {
+            setLoading(true, "Seeking…");
+        });
+
+        bindEvent("canplay", function () {
+            setLoading(false);
+        });
+
+        bindEvent("canplaythrough", function () {
+            setLoading(false);
+        });
+
+        bindEvent("playing", function () {
+            setLoading(false);
+        });
+
+        bindEvent("seeked", function () {
+            var media = getMediaElement();
+            if (media && media.readyState >= 2 && !media.seeking) {
+                setLoading(false);
+            }
+        });
+
+        bindEvent("error", function () {
+            setLoading(false);
+        });
+    }
+
     function bindProgressTracking() {
         var media = getMediaElement();
         if (!media) return;
@@ -158,9 +215,11 @@
         }
 
         plyrInstance = new Plyr(element, options);
+        bindBufferingLoader();
         bindProgressTracking();
         bindEpisodeShortcuts();
     } else if (element && (mediaType === "video" || mediaType === "audio")) {
+        bindBufferingLoader();
         bindProgressTracking();
         bindEpisodeShortcuts();
     } else if (mediaType === "image" || mediaType === "text") {

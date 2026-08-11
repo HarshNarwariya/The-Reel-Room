@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load content_extras %}
 
-{% block title %}{{ media.title }} — The Reel Room{% endblock %}
+{% block title %}{{ media.title }} — Hyakutake{% endblock %}
 {% block container_class %} player-container-full{% endblock %}
 
 {% block extra_head %}
@@ -20,13 +20,19 @@
          {% if next_media %}data-next-url="{% url 'player' next_media.id %}"{% endif %}>
 
         {% if media.media_type == "video" %}
-        <div class="reel-player reel-player--video">
-            <video id="media-element" playsinline
-                   {% if media.thumbnail_url %}data-poster="{{ media.thumbnail_url }}"{% endif %}>
-                {% if media.file_url %}
-                <source src="{{ media.file_url }}" type="video/mp4">
-                {% endif %}
-            </video>
+        <div class="media-player media-player--video">
+            <div class="media-player-stage">
+                <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
+                    <div class="media-loader-ring" aria-hidden="true"></div>
+                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading…</span>
+                </div>
+                <video id="media-element" playsinline
+                       {% if media.thumbnail_url %}data-poster="{{ media.thumbnail_url }}"{% endif %}>
+                    {% if media.file_url %}
+                    <source src="{{ media.file_url }}" type="video/mp4">
+                    {% endif %}
+                </video>
+            </div>
             <div class="filmstrip" aria-hidden="true"></div>
         </div>
         <div class="modal-meta">
@@ -45,10 +51,16 @@
 
         {% elif media.media_type == "audio" %}
         <div class="player-audio-panel">
-            <div class="vinyl-wrap"><div class="vinyl" id="vinylDisc"></div></div>
+            <div class="vinyl-wrap">
+                <div class="vinyl" id="vinylDisc"></div>
+                <div class="media-loader media-loader--audio is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
+                    <div class="media-loader-ring" aria-hidden="true"></div>
+                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading…</span>
+                </div>
+            </div>
             <div class="audio-title">{{ media.title }}</div>
             <div class="audio-sub">{{ media.album.title }} · <span class="stamp {{ media.media_type|type_stamp_class }}" style="margin-left:4px;">{{ media.media_type|type_label }}</span></div>
-            <div class="reel-player reel-player--audio">
+            <div class="media-player media-player--audio">
                 <audio id="media-element">
                     {% if media.file_url %}
                     <source src="{{ media.file_url }}" type="audio/mpeg">
