@@ -1007,6 +1007,85 @@ a.tab-stub {
     pointer-events: none;
 }
 
+.playback-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    margin-top: 20px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--ink-2);
+}
+
+.playback-options-label {
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+}
+
+.playback-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--paper-dim);
+    cursor: pointer;
+    user-select: none;
+}
+
+.playback-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--amber);
+    cursor: pointer;
+}
+
+.playback-mode {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.mode-stub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 3px;
+    color: var(--paper-dim);
+    background: var(--ink);
+    transition: all 0.2s ease;
+}
+
+.mode-stub:hover {
+    color: var(--paper);
+    border-color: var(--paper-dim);
+}
+
+.mode-stub.active {
+    color: var(--ink);
+    background: var(--amber);
+    border-color: var(--amber);
+    border-style: solid;
+}
+
+@media (max-width: 640px) {
+    .playback-mode {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .mode-stub {
+        flex: 1;
+        text-align: center;
+    }
+}
+
 /* ---------- auth ---------- */
 .auth-card {
     background: var(--ink-2);

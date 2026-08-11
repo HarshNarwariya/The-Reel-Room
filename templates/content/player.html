@@ -16,6 +16,7 @@
          data-media-type="{{ media.media_type }}"
          data-position="{{ position_seconds }}"
          data-update-url="/api/history/update/"
+         data-sibling-ids='{{ sibling_ids_json }}'
          {% if prev_media %}data-prev-url="{% url 'player' prev_media.id %}"{% endif %}
          {% if next_media %}data-next-url="{% url 'player' next_media.id %}"{% endif %}>
 
@@ -102,6 +103,20 @@
             <div class="modal-title" style="margin-bottom:24px;">{{ media.title }}</div>
             <div class="player-text-content">
                 {{ media.text_content|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if media.media_type == "video" or media.media_type == "audio" %}
+        <div class="playback-options" id="playbackOptions">
+            <div class="playback-options-label mono">Playback</div>
+            <label class="playback-toggle">
+                <input type="checkbox" id="autoplayToggle" checked>
+                <span>Autoplay</span>
+            </label>
+            <div class="playback-mode" id="autoplayModeGroup">
+                <button type="button" class="mode-stub active" data-mode="order">In order</button>
+                <button type="button" class="mode-stub" data-mode="random">Random</button>
             </div>
         </div>
         {% endif %}
