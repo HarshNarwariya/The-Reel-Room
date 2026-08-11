@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}The Reel Room{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="site-nav">
+        <a href="{% url 'home' %}" class="nav-brand">The <em>Reel</em> Room</a>
+        <form class="nav-search" action="{% url 'search' %}" method="get" role="search">
+            <svg class="nav-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                <path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search albums & media…" aria-label="Search">
+        </form>
+        <div class="nav-links">
+            <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Shelf</a>
+            <a href="{% url 'browse' %}" {% if request.resolver_match.url_name == 'browse' %}class="active"{% endif %}>Browse</a>
+            <a href="{% url 'archive' %}" {% if request.resolver_match.url_name == 'archive' %}class="active"{% endif %}>Archive</a>
+            <a href="{% url 'history' %}" {% if request.resolver_match.url_name == 'history' %}class="active"{% endif %}>My List</a>
+            <span class="nav-user">{{ user.username }}</span>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="container{% block container_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

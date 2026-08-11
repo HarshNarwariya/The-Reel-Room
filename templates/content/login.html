@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — The Reel Room{% endblock %}
+{% block container_class %} auth-container{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h1 class="auth-wordmark">The <em>Reel</em> Room</h1>
+    <p class="auth-sub">Sign in to access the archive</p>
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="id_username">Email or Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <span class="field-error">{{ form.username.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+            <span class="field-error">{{ form.password.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn-primary">Sign In</button>
+    </form>
+</div>
+{% endblock %}

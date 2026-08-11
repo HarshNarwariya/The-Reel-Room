@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}{% if query %}Search: {{ query }}{% else %}Search{% endif %} — The Reel Room{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <div class="eyebrow">Catalog Index</div>
+    <h1 class="wordmark">Search the <em>Archive</em></h1>
+    <p class="tagline">Find albums, episodes, and entries across the entire shelf.</p>
+</div>
+
+<form class="search-hero" action="{% url 'search' %}" method="get" role="search">
+    <input type="search" name="q" value="{{ query }}" placeholder="Title, album, or keywords…" autofocus>
+    <button type="submit" class="btn-search">Search</button>
+</form>
+
+{% if query %}
+<p class="search-meta mono">
+    {% if result_count %}
+    {{ result_count }} result{{ result_count|pluralize }} for “{{ query }}”
+    {% else %}
+    No results for “{{ query }}”
+    {% endif %}
+</p>
+
+{% if albums_page and albums_page.object_list %}
+<div class="section-label" style="margin:28px 0 16px;">Albums</div>
+<div class="shelf-grid">
+    {% for album in albums_page %}
+    <a href="{% url 'album-detail' album.id %}" class="album-card">
+        <div class="card-frame">
+            {% if album.thumbnail_url %}
+            <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="corner-tag">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+        </div>
+        <div class="card-body">
+            <h2 class="card-title">{{ album.title }}</h2>
+            {% if album.description %}
+            <p class="card-desc">{{ album.description }}</p>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=albums_page page_param="album_page" %}
+{% endif %}
+
+{% if media_page and media_page.object_list %}
+<div class="section-label" style="margin:28px 0 16px;">Media</div>
+<div class="ledger">
+    {% for item in media_page %}
+    <a href="{% url 'player' item.id %}" class="ledger-row">
+        <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
+        <div class="row-thumb">
+            {% if item.thumbnail_url %}
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="play-glyph">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            </div>
+        </div>
+        <div class="row-main">
+            <div class="row-title-line">
+                <span class="row-title">{{ item.title }}</span>
+                <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
+            </div>
+            <div class="row-sub">{{ item.album.title }}</div>
+        </div>
+        <div class="counter">{{ item|counter_label }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=media_page page_param="media_page" %}
+{% endif %}
+
+{% if not result_count %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>Try a different title or browse the <a href="{% url 'browse' %}">full catalog</a>.</p>
+</div>
+{% endif %}
+
+{% else %}
+<div class="search-hints">
+    <div class="section-label">Quick filters</div>
+    <div class="tabs">
+        <a href="{% url 'browse' %}?type=video" class="tab-stub">Video</a>
+        <a href="{% url 'browse' %}?type=audio" class="tab-stub">Audio</a>
+        <a href="{% url 'browse' %}?type=image" class="tab-stub">Image</a>
+        <a href="{% url 'browse' %}?type=text" class="tab-stub">Text</a>
+        <a href="{% url 'browse' %}" class="tab-stub">All Media</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

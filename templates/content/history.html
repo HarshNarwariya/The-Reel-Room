@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}My List — The Reel Room{% endblock %}
+
+{% block content %}
+<div class="topbar" style="margin-bottom:32px;">
+    <div class="eyebrow">Watch History</div>
+    <h1 class="wordmark" style="font-size:clamp(32px,5vw,48px);">My <em>List</em></h1>
+    <p class="tagline">Everything you've started, paused, or finished — stamped and ready to pick back up.</p>
+    {% if history_page.paginator.count %}
+    <div class="shelf-stat">
+        <div class="num mono">{{ history_page.paginator.count|stringformat:"02d" }}</div>
+        <div class="label">Items logged</div>
+    </div>
+    {% endif %}
+</div>
+
+{% if history_page.object_list %}
+<div class="ledger">
+    {% for record in history_page %}
+    <a href="{% url 'player' record.media.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+        <div class="row-index mono">{{ forloop.counter|page_row_index:history_page|stringformat:"03d" }}</div>
+        <div class="row-thumb">
+            {% if record.media.thumbnail_url %}
+            <img src="{{ record.media.thumbnail_url }}" alt="{{ record.media.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ record.media.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="play-glyph">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            </div>
+        </div>
+        <div class="row-main">
+            <div class="row-title-line">
+                <span class="row-title">{{ record.media.title }}</span>
+                {% if record.completed %}
+                <span class="stamp stamp-complete">done</span>
+                {% else %}
+                <span class="stamp {{ record.media.media_type|type_stamp_class }}">{{ record.media.media_type|type_label }}</span>
+                {% endif %}
+            </div>
+            <div class="row-sub">{{ record.media.album.title }} · {{ record.updated_at|timesince }} ago</div>
+            {% if not record.completed and record.media.duration_seconds %}
+            <div class="progress-bar-mini">
+                <div class="fill" style="width: {{ record|progress_percent }}%;"></div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="counter">
+            {% if record.completed %}
+            complete
+            {% elif record.media.duration_seconds %}
+            {{ record.position_seconds|format_duration }}
+            {% else %}
+            {{ record.media|counter_label }}
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=history_page page_param="page" %}
+{% else %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>Your watch history is empty. Browse the <a href="{% url 'home' %}">shelf</a> to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}The Reel Room — Media Archive{% endblock %}
+
+{% block content %}
+{% if resume_page.object_list %}
+{% with primary=resume_page.object_list.0 %}
+<section class="home-hero">
+    <div class="topbar topbar-flush">
+        <div class="eyebrow">{{ primary.media.album.title }} · {{ primary.media.media_type|type_label }}</div>
+        <h1 class="wordmark wordmark-media">{{ primary.media.title }}</h1>
+        <p class="tagline">
+            Resume from {{ primary.position_seconds|format_duration }}
+            {% if resume_page.paginator.count > 1 %} · {{ resume_page.paginator.count|add:"-1" }} more waiting{% endif %}
+        </p>
+        {% if album_total %}
+        <div class="shelf-stat">
+            <div class="num mono">{{ album_total|stringformat:"02d" }}</div>
+            <div class="label">Albums on the shelf</div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="ledger">
+        {% for record in resume_page %}
+        <a href="{% url 'player' record.media.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+            <div class="row-index mono">{{ forloop.counter|page_row_index:resume_page|stringformat:"03d" }}</div>
+            <div class="row-thumb">
+                {% if record.media.thumbnail_url %}
+                <img src="{{ record.media.thumbnail_url }}" alt="{{ record.media.title }}" loading="lazy">
+                {% else %}
+                <div class="placeholder-thumb">{{ record.media.title|slice:":1"|upper }}</div>
+                {% endif %}
+                <div class="play-glyph">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+                </div>
+            </div>
+            <div class="row-main">
+                <div class="row-title-line">
+                    <span class="row-title">{{ record.media.title }}</span>
+                    <span class="stamp {{ record.media.media_type|type_stamp_class }}">{{ record.media.media_type|type_label }}</span>
+                </div>
+                <div class="row-sub">{{ record.media.album.title }}</div>
+                {% if record.media.duration_seconds %}
+                <div class="progress-bar-mini">
+                    <div class="fill" style="width: {{ record|progress_percent }}%;"></div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="counter">{{ record.position_seconds|format_duration }}</div>
+        </a>
+        {% endfor %}
+    </div>
+    {% include "partials/pagination.html" with page_obj=resume_page page_param="resume_page" %}
+</section>
+{% endwith %}
+
+{% elif featured_media %}
+<section class="home-hero">
+    <div class="topbar topbar-flush">
+        <div class="eyebrow">{{ featured_media.album.title }} · {{ featured_media.media_type|type_label }}</div>
+        <h1 class="wordmark wordmark-media">{{ featured_media.title }}</h1>
+        <p class="tagline">Ready to play — the newest item on the shelf.</p>
+        {% if album_total %}
+        <div class="shelf-stat">
+            <div class="num mono">{{ album_total|stringformat:"02d" }}</div>
+            <div class="label">Albums on the shelf</div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="ledger">
+        <a href="{% url 'player' featured_media.id %}" class="ledger-row" style="animation-delay:0s">
+            <div class="row-index mono">001</div>
+            <div class="row-thumb">
+                {% if featured_media.thumbnail_url %}
+                <img src="{{ featured_media.thumbnail_url }}" alt="{{ featured_media.title }}" loading="lazy">
+                {% else %}
+                <div class="placeholder-thumb">{{ featured_media.title|slice:":1"|upper }}</div>
+                {% endif %}
+                <div class="play-glyph">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+                </div>
+            </div>
+            <div class="row-main">
+                <div class="row-title-line">
+                    <span class="row-title">{{ featured_media.title }}</span>
+                    <span class="stamp {{ featured_media.media_type|type_stamp_class }}">{{ featured_media.media_type|type_label }}</span>
+                </div>
+                <div class="row-sub">{{ featured_media.album.title }}</div>
+            </div>
+            <div class="counter">play now</div>
+        </a>
+    </div>
+</section>
+
+{% else %}
+<div class="topbar">
+    <div class="eyebrow">Personal Archive</div>
+    <h1 class="wordmark">The <em>Reel</em> Room</h1>
+    {% if album_total %}
+    <p class="tagline">Browse the shelf below.</p>
+    <div class="shelf-stat">
+        <div class="num mono">{{ album_total|stringformat:"02d" }}</div>
+        <div class="label">Albums on the shelf</div>
+    </div>
+    {% else %}
+    <p class="tagline">Nothing on the shelf yet. Add albums via the admin panel.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if albums_page.object_list %}
+{% if resume_page.object_list or featured_media %}
+<div class="section-label" style="margin-bottom:18px;">All Albums</div>
+{% endif %}
+<div class="shelf-grid">
+    {% for album in albums_page %}
+    <a href="{% url 'album-detail' album.id %}" class="album-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.05s)">
+        <div class="card-frame">
+            {% if album.thumbnail_url %}
+            <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="corner-tag">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+            <div class="card-index">No. {{ forloop.counter|page_row_index:albums_page|stringformat:"02d" }}</div>
+        </div>
+        <div class="card-body">
+            <h2 class="card-title">{{ album.title }}</h2>
+            {% if album.description %}
+            <p class="card-desc">{{ album.description }}</p>
+            {% else %}
+            <p class="card-desc">{{ album.media_items.count }} logged item{{ album.media_items.count|pluralize }} in this collection.</p>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=albums_page page_param="album_page" %}
+{% elif not resume_page.object_list and not featured_media %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>No albums on the shelf yet. Add content via the <a href="/admin/">admin panel</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

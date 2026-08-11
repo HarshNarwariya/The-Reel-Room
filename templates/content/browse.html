@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}Browse — The Reel Room{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <div class="eyebrow">Full Catalog</div>
+    <h1 class="wordmark">Browse the <em>Ledger</em></h1>
+    <p class="tagline">Every logged item across all albums — filter by format and jump straight in.</p>
+    <div class="shelf-stat">
+        <div class="num mono">{{ media_counts.all|stringformat:"02d" }}</div>
+        <div class="label">Total entries</div>
+    </div>
+</div>
+
+<div class="tabs">
+    <a href="{% url 'browse' %}?type=all" class="tab-stub{% if active_type == 'all' %} active{% endif %}">
+        All <span class="count mono">{{ media_counts.all }}</span>
+    </a>
+    <a href="{% url 'browse' %}?type=video" class="tab-stub{% if active_type == 'video' %} active{% endif %}">
+        Video <span class="count mono">{{ media_counts.video }}</span>
+    </a>
+    <a href="{% url 'browse' %}?type=audio" class="tab-stub{% if active_type == 'audio' %} active{% endif %}">
+        Audio <span class="count mono">{{ media_counts.audio }}</span>
+    </a>
+    <a href="{% url 'browse' %}?type=image" class="tab-stub{% if active_type == 'image' %} active{% endif %}">
+        Image <span class="count mono">{{ media_counts.image }}</span>
+    </a>
+    <a href="{% url 'browse' %}?type=text" class="tab-stub{% if active_type == 'text' %} active{% endif %}">
+        Text <span class="count mono">{{ media_counts.text }}</span>
+    </a>
+</div>
+
+{% if media_page.object_list %}
+<div class="ledger">
+    {% for item in media_page %}
+    <a href="{% url 'player' item.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.02s)">
+        <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
+        <div class="row-thumb">
+            {% if item.thumbnail_url %}
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="play-glyph">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            </div>
+        </div>
+        <div class="row-main">
+            <div class="row-title-line">
+                <span class="row-title">{{ item.title }}</span>
+                <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
+            </div>
+            <div class="row-sub">{{ item.album.title }}</div>
+        </div>
+        <div class="counter">{{ item|counter_label }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=media_page page_param="page" %}
+{% else %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>No media of this type in the archive yet.</p>
+</div>
+{% endif %}
+{% endblock %}

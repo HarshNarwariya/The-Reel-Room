@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}Archive — The Reel Room{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <div class="eyebrow">Collection Stats</div>
+    <h1 class="wordmark">The <em>Archive</em></h1>
+    <p class="tagline">A snapshot of everything on the shelf and your personal viewing ledger.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-num mono">{{ album_total|stringformat:"02d" }}</div>
+        <div class="stat-label">Albums</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num mono">{{ media_counts.total|stringformat:"02d" }}</div>
+        <div class="stat-label">Total Media</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num mono">{{ user_stats.watched|stringformat:"02d" }}</div>
+        <div class="stat-label">You've Watched</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num mono">{{ user_stats.in_progress|stringformat:"02d" }}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+</div>
+
+<div class="section-label" style="margin:36px 0 16px;">By Format</div>
+<div class="format-breakdown">
+    <div class="format-row">
+        <span class="stamp stamp-video">VID</span>
+        <span class="format-name">Video</span>
+        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.video media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
+        <span class="format-count mono">{{ media_counts.video }}</span>
+    </div>
+    <div class="format-row">
+        <span class="stamp stamp-audio">AUD</span>
+        <span class="format-name">Audio</span>
+        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.audio media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
+        <span class="format-count mono">{{ media_counts.audio }}</span>
+    </div>
+    <div class="format-row">
+        <span class="stamp stamp-image">IMG</span>
+        <span class="format-name">Image</span>
+        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.image media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
+        <span class="format-count mono">{{ media_counts.image }}</span>
+    </div>
+    <div class="format-row">
+        <span class="stamp stamp-text">TXT</span>
+        <span class="format-name">Text</span>
+        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.text media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
+        <span class="format-count mono">{{ media_counts.text }}</span>
+    </div>
+</div>
+
+{% if recent_page.object_list %}
+<div class="section-label" style="margin:36px 0 16px;">Recently Added</div>
+<div class="ledger">
+    {% for item in recent_page %}
+    <a href="{% url 'player' item.id %}" class="ledger-row">
+        <div class="row-index mono">{{ forloop.counter|page_row_index:recent_page|stringformat:"03d" }}</div>
+        <div class="row-thumb">
+            {% if item.thumbnail_url %}
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="play-glyph">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            </div>
+        </div>
+        <div class="row-main">
+            <div class="row-title-line">
+                <span class="row-title">{{ item.title }}</span>
+                <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
+            </div>
+            <div class="row-sub">{{ item.album.title }}</div>
+        </div>
+        <div class="counter">{{ item|counter_label }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=recent_page page_param="recent_page" %}
+{% endif %}
+
+{% if albums_page.object_list %}
+<div class="section-label" style="margin:36px 0 16px;">All Collections</div>
+<div class="shelf-grid">
+    {% for album in albums_page %}
+    <a href="{% url 'album-detail' album.id %}" class="album-card">
+        <div class="card-frame">
+            {% if album.thumbnail_url %}
+            <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="corner-tag">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+            <div class="card-index">No. {{ forloop.counter|page_row_index:albums_page|stringformat:"02d" }}</div>
+        </div>
+        <div class="card-body">
+            <h2 class="card-title">{{ album.title }}</h2>
+            <p class="card-desc">{{ album.media_items.count }} logged item{{ album.media_items.count|pluralize }}</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=albums_page page_param="album_page" %}
+{% endif %}
+{% endblock %}

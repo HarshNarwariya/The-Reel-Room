@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}{{ album.title }} — The Reel Room{% endblock %}
+
+{% block content %}
+<a href="{% url 'home' %}" class="back-btn">← Back to the shelf</a>
+
+<div class="album-banner">
+    {% if album.thumbnail_url %}
+    <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}">
+    {% else %}
+    <div class="banner-placeholder">{{ album.title|slice:":1"|upper }}</div>
+    {% endif %}
+    <div class="album-head">
+        <div class="album-index">No. {{ album_index|stringformat:"02d" }} — {{ media_counts.all }} logged item{{ media_counts.all|pluralize }}</div>
+        <h1 class="album-title">{{ album.title }}</h1>
+    </div>
+</div>
+
+{% if album.description %}
+<div class="album-about">
+    <p class="album-desc" id="albumDesc">{{ album.description }}</p>
+    <button class="desc-toggle" id="descToggle" type="button" hidden>Read more</button>
+</div>
+{% endif %}
+
+{% if media_counts.all %}
+<div class="tabs">
+    <a href="{% url 'album-detail' album.id %}?type=all" class="tab-stub{% if active_type == 'all' %} active{% endif %}">
+        All <span class="count mono">{{ media_counts.all }}</span>
+    </a>
+    {% if media_counts.video %}
+    <a href="{% url 'album-detail' album.id %}?type=video" class="tab-stub{% if active_type == 'video' %} active{% endif %}">
+        Video <span class="count mono">{{ media_counts.video }}</span>
+    </a>
+    {% endif %}
+    {% if media_counts.audio %}
+    <a href="{% url 'album-detail' album.id %}?type=audio" class="tab-stub{% if active_type == 'audio' %} active{% endif %}">
+        Audio <span class="count mono">{{ media_counts.audio }}</span>
+    </a>
+    {% endif %}
+    {% if media_counts.image %}
+    <a href="{% url 'album-detail' album.id %}?type=image" class="tab-stub{% if active_type == 'image' %} active{% endif %}">
+        Image <span class="count mono">{{ media_counts.image }}</span>
+    </a>
+    {% endif %}
+    {% if media_counts.text %}
+    <a href="{% url 'album-detail' album.id %}?type=text" class="tab-stub{% if active_type == 'text' %} active{% endif %}">
+        Text <span class="count mono">{{ media_counts.text }}</span>
+    </a>
+    {% endif %}
+</div>
+
+{% if media_page.object_list %}
+<div class="ledger">
+    {% for item in media_page %}
+    <a href="{% url 'player' item.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+        <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
+        <div class="row-thumb">
+            {% if item.thumbnail_url %}
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+            {% endif %}
+            <div class="play-glyph">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            </div>
+        </div>
+        <div class="row-main">
+            <div class="row-title-line">
+                <span class="row-title">{{ item.title }}</span>
+                <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
+            </div>
+            <div class="row-sub">{{ album.title }}</div>
+        </div>
+        <div class="counter">{{ item|counter_label }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" with page_obj=media_page page_param="page" %}
+{% else %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>No items of this type in this album yet.</p>
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state">
+    <div class="glyph">Nothing filed here</div>
+    <p>This album has no logged items yet.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var desc = document.getElementById("albumDesc");
+    var toggle = document.getElementById("descToggle");
+    if (!desc || !toggle) return;
+
+    function syncToggle() {
+        var clamped = !desc.classList.contains("expanded");
+        if (clamped) {
+            toggle.hidden = desc.scrollHeight <= desc.clientHeight + 2;
+        } else {
+            toggle.hidden = false;
+        }
+    }
+
+    toggle.addEventListener("click", function () {
+        var expanded = desc.classList.toggle("expanded");
+        toggle.textContent = expanded ? "Read less" : "Read more";
+        syncToggle();
+    });
+
+    syncToggle();
+    window.addEventListener("resize", syncToggle);
+})();
+</script>
+{% endblock %}
