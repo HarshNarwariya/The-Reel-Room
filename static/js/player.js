@@ -3,6 +3,7 @@
 
     var STORAGE_AUTOPLAY = "hyakutake_autoplay";
     var STORAGE_MODE = "hyakutake_autoplay_mode";
+    var RESUME_PROMPT_MS = 10000;
 
     var container = document.getElementById("player-container");
     if (!container) return;
@@ -10,12 +11,17 @@
     var mediaId = parseInt(container.dataset.mediaId, 10);
     var mediaType = container.dataset.mediaType;
     var updateUrl = container.dataset.updateUrl;
-    var startPosition = parseFloat(container.dataset.position) || 0;
     var element = document.getElementById("media-element");
+    var resumePrompt = document.getElementById("resumePrompt");
+    var resumeSeconds = resumePrompt
+        ? parseFloat(resumePrompt.dataset.resumeSeconds) || 0
+        : 0;
     var vinyl = document.getElementById("vinylDisc");
     var plyrInstance = null;
     var autoplayAttempted = false;
     var advancing = false;
+    var resumeHideTimer = null;
+    var resumePromptShown = false;
 
     var siblingIds = [];
     try {
@@ -79,8 +85,11 @@
 
     function tryAutoplay() {
         if (!isAutoplayEnabled() || autoplayAttempted) return;
-        autoplayAttempted = true;
+        startPlayback();
+    }
 
+    function startPlayback() {
+        autoplayAttempted = true;
         var playPromise;
         if (plyrInstance) {
             playPromise = plyrInstance.play();
@@ -93,6 +102,12 @@
                 autoplayAttempted = false;
             });
         }
+    }
+
+    function ensurePlaying() {
+        var media = getMediaElement();
+        if (!media || !media.paused) return;
+        startPlayback();
     }
 
     function navigateToNext() {
@@ -121,6 +136,112 @@
         window.setTimeout(function () {
             window.location.href = targetUrl;
         }, 400);
+    }
+
+    function clearResumeTimer() {
+        if (resumeHideTimer) {
+            window.clearTimeout(resumeHideTimer);
+            resumeHideTimer = null;
+        }
+    }
+
+    function restartResumeCountdown() {
+        if (!resumePrompt) return;
+        var countdown = resumePrompt.querySelector(".resume-prompt-countdown");
+        if (!countdown) return;
+        countdown.classList.remove("is-running");
+        void countdown.offsetWidth;
+        countdown.classList.add("is-running");
+    }
+
+    function hideResumePrompt() {
+        if (!resumePrompt) return;
+        clearResumeTimer();
+        resumePrompt.classList.remove("is-visible");
+        var countdown = resumePrompt.querySelector(".resume-prompt-countdown");
+        if (countdown) {
+            countdown.classList.remove("is-running");
+        }
+    }
+
+    function dismissResumePrompt() {
+        hideResumePrompt();
+    }
+
+    function startFromBeginningWithPrompt() {
+        if (resumePromptShown) return;
+        seekTo(0);
+        autoplayAttempted = false;
+        startPlayback();
+        showResumePrompt();
+    }
+
+    function positionResumePrompt() {
+        if (!resumePrompt) return;
+        var host = resumePrompt.closest(".media-player-stage, .media-player--audio");
+        if (!host) return;
+
+        var controls = host.querySelector(".plyr__controls");
+        var gap = 12;
+        if (!controls) {
+            resumePrompt.style.bottom = "54px";
+            return;
+        }
+
+        var hostRect = host.getBoundingClientRect();
+        var controlsRect = controls.getBoundingClientRect();
+        var bottomOffset = hostRect.bottom - controlsRect.top + gap;
+        resumePrompt.style.bottom = Math.max(bottomOffset, 54) + "px";
+    }
+
+    function showResumePrompt() {
+        if (!resumePrompt || resumeSeconds <= 0 || resumePromptShown) return;
+        resumePromptShown = true;
+        positionResumePrompt();
+        resumePrompt.classList.add("is-visible");
+        restartResumeCountdown();
+        clearResumeTimer();
+        resumeHideTimer = window.setTimeout(dismissResumePrompt, RESUME_PROMPT_MS);
+    }
+
+    function seekTo(seconds) {
+        var media = getMediaElement();
+        if (!media) return;
+        if (plyrInstance) {
+            plyrInstance.currentTime = seconds;
+        } else {
+            media.currentTime = seconds;
+        }
+    }
+
+    function bindResumePrompt() {
+        if (!resumePrompt || resumeSeconds <= 0) return;
+
+        var continueBtn = document.getElementById("resumeContinue");
+        var startOverBtn = document.getElementById("resumeStartOver");
+        var dismissBtn = document.getElementById("resumeDismiss");
+
+        if (continueBtn) {
+            continueBtn.addEventListener("click", function () {
+                hideResumePrompt();
+                seekTo(resumeSeconds);
+                ensurePlaying();
+            });
+        }
+
+        if (startOverBtn) {
+            startOverBtn.addEventListener("click", function () {
+                hideResumePrompt();
+                seekTo(0);
+                ensurePlaying();
+            });
+        }
+
+        if (dismissBtn) {
+            dismissBtn.addEventListener("click", function () {
+                dismissResumePrompt();
+            });
+        }
     }
 
     function bindPlaybackOptions() {
@@ -188,7 +309,11 @@
 
         bindEvent("canplay", function () {
             setLoading(false);
-            tryAutoplay();
+            if (resumeSeconds > 0) {
+                startFromBeginningWithPrompt();
+            } else {
+                tryAutoplay();
+            }
         });
 
         bindEvent("canplaythrough", function () {
@@ -216,22 +341,11 @@
         if (!media) return;
 
         var lastSaved = 0;
-        var resumeApplied = false;
-
-        function applyResume() {
-            if (resumeApplied || startPosition <= 0) return;
-            if (startPosition >= media.duration) return;
-            resumeApplied = true;
-            if (plyrInstance) {
-                plyrInstance.currentTime = startPosition;
-            } else {
-                media.currentTime = startPosition;
-            }
-        }
 
         function onLoaded() {
-            applyResume();
-            tryAutoplay();
+            if (resumeSeconds <= 0) {
+                tryAutoplay();
+            }
         }
 
         function onTimeUpdate() {
@@ -303,7 +417,7 @@
             clickToPlay: true,
             hideControls: true,
             resetOnEnd: false,
-            autoplay: isAutoplayEnabled(),
+            autoplay: false,
         };
 
         if (mediaType === "video") {
@@ -335,11 +449,15 @@
         }
 
         plyrInstance = new Plyr(element, options);
+        bindResumePrompt();
         bindPlaybackOptions();
         bindBufferingLoader();
         bindProgressTracking();
         bindEpisodeShortcuts();
+        positionResumePrompt();
+        window.addEventListener("resize", positionResumePrompt);
     } else if (element && (mediaType === "video" || mediaType === "audio")) {
+        bindResumePrompt();
         bindPlaybackOptions();
         bindBufferingLoader();
         bindProgressTracking();

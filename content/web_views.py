@@ -110,10 +110,9 @@ def player(request, pk):
         else None
     )
     history = PlaybackHistory.objects.filter(user=request.user, media=media).first()
-    if history and history.completed:
-        position_seconds = 0
-    else:
-        position_seconds = history.position_seconds if history else 0
+    resume_seconds = 0
+    if history and not history.completed and history.position_seconds >= 5:
+        resume_seconds = int(history.position_seconds)
     episode_index = index + 1 if index >= 0 else 1
     episode_total = len(siblings)
     return render(
@@ -123,7 +122,7 @@ def player(request, pk):
             "media": media,
             "prev_media": prev_media,
             "next_media": next_media,
-            "position_seconds": position_seconds,
+            "resume_seconds": resume_seconds,
             "completed": history.completed if history else False,
             "episode_index": episode_index,
             "episode_total": episode_total,

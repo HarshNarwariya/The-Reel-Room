@@ -73,6 +73,173 @@
 
 .media-player--video {
     background: var(--ink-2);
+    position: relative;
+}
+
+/* Resume prompt — MX Player style overlay */
+
+.resume-prompt {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 36px 12px 12px;
+    border-radius: 4px;
+    background: rgba(10, 9, 7, 0.92);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.resume-prompt--overlay {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 54px;
+    z-index: 100;
+}
+
+.resume-prompt--overlay.resume-prompt--audio {
+    bottom: 12px;
+}
+
+.resume-prompt-inner {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.resume-prompt.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.resume-prompt--audio.is-visible {
+    transform: translateY(0);
+}
+
+.resume-prompt-text {
+    font-size: 13px;
+    color: var(--paper-dim);
+    line-height: 1.4;
+}
+
+.resume-prompt-text strong {
+    color: var(--amber);
+    font-weight: 600;
+}
+
+.resume-prompt-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.resume-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 3px;
+    border: 1px dashed var(--line-strong);
+    background: var(--ink);
+    color: var(--paper-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.resume-btn:hover {
+    color: var(--paper);
+    border-color: var(--paper-dim);
+}
+
+.resume-btn--primary {
+    background: var(--amber);
+    border: 1px solid var(--amber);
+    border-style: solid;
+    color: var(--ink);
+}
+
+.resume-btn--primary:hover {
+    filter: brightness(1.08);
+    color: var(--ink);
+}
+
+.resume-dismiss {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--paper-faint);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.resume-dismiss:hover {
+    color: var(--paper);
+    background: rgba(236, 230, 214, 0.08);
+}
+
+.resume-prompt-countdown {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--amber);
+    transform-origin: left center;
+    transform: scaleX(1);
+    opacity: 0.85;
+}
+
+.resume-prompt-countdown.is-running {
+    animation: resumeCountdown 10s linear forwards;
+}
+
+@keyframes resumeCountdown {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+@media (max-width: 520px) {
+    .resume-prompt-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resume-prompt-actions {
+        width: 100%;
+    }
+
+    .resume-btn {
+        flex: 1;
+        text-align: center;
+    }
 }
 
 .media-player-stage {

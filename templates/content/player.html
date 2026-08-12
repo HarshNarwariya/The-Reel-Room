@@ -14,7 +14,6 @@
     <div id="player-container"
          data-media-id="{{ media.id }}"
          data-media-type="{{ media.media_type }}"
-         data-position="{{ position_seconds }}"
          data-update-url="/api/history/update/"
          data-sibling-ids='{{ sibling_ids_json }}'
          {% if prev_media %}data-prev-url="{% url 'player' prev_media.id %}"{% endif %}
@@ -33,6 +32,19 @@
                     <source src="{{ media.file_url }}" type="video/mp4">
                     {% endif %}
                 </video>
+                {% if resume_seconds %}
+                <div class="resume-prompt resume-prompt--overlay" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
+                    <div class="resume-prompt-inner">
+                        <span class="resume-prompt-text">Resume from <strong class="mono">{{ resume_seconds|format_duration }}</strong>?</span>
+                        <div class="resume-prompt-actions">
+                            <button type="button" class="resume-btn resume-btn--primary" id="resumeContinue">Resume</button>
+                            <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
+                        </div>
+                    </div>
+                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">×</button>
+                    <div class="resume-prompt-countdown" aria-hidden="true"></div>
+                </div>
+                {% endif %}
             </div>
             <div class="filmstrip" aria-hidden="true"></div>
         </div>
@@ -67,6 +79,19 @@
                     <source src="{{ media.file_url }}" type="audio/mpeg">
                     {% endif %}
                 </audio>
+                {% if resume_seconds %}
+                <div class="resume-prompt resume-prompt--overlay resume-prompt--audio" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
+                    <div class="resume-prompt-inner">
+                        <span class="resume-prompt-text">Resume from <strong class="mono">{{ resume_seconds|format_duration }}</strong>?</span>
+                        <div class="resume-prompt-actions">
+                            <button type="button" class="resume-btn resume-btn--primary" id="resumeContinue">Resume</button>
+                            <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
+                        </div>
+                    </div>
+                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">×</button>
+                    <div class="resume-prompt-countdown" aria-hidden="true"></div>
+                </div>
+                {% endif %}
             </div>
             {% if media.duration_seconds %}
             <div class="counter" style="display:inline-block; margin-top:14px;">{{ media.duration_seconds|format_duration }}</div>
