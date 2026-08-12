@@ -35,16 +35,18 @@ def home(request):
     albums_qs = Album.objects.prefetch_related("media_items").order_by("-created_at")
     albums_page = paginate(request, albums_qs, PAGE_SIZE_ALBUMS, "album_page")
 
-    resume_qs = (
-        PlaybackHistory.objects.filter(user=request.user, completed=False)
-        .select_related("media", "media__album")
-        .order_by("-updated_at")
+    history_qs = PlaybackHistory.objects.filter(user=request.user).select_related(
+        "media", "media__album"
     )
+    hero_record = history_qs.order_by("-updated_at").first()
+
+    resume_qs = history_qs.filter(completed=False).order_by("-updated_at")
+    if hero_record:
+        resume_qs = resume_qs.exclude(pk=hero_record.pk)
     resume_page = paginate(request, resume_qs, PAGE_SIZE_RESUME, "resume_page")
 
-    has_history = PlaybackHistory.objects.filter(user=request.user).exists()
     featured_media = None
-    if not has_history:
+    if not hero_record:
         featured_media = (
             Media.objects.select_related("album").order_by("-created_at").first()
         )
@@ -54,6 +56,7 @@ def home(request):
         "content/home.html",
         {
             "albums_page": albums_page,
+            "hero_record": hero_record,
             "resume_page": resume_page,
             "featured_media": featured_media,
             "album_total": albums_qs.count(),

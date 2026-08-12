@@ -5,50 +5,31 @@
 
 {% block content %}
 
-{% if resume_page.object_list %}
-{% with primary=resume_page.object_list.0 %}
-<section class="page-hero">
-    <a href="{% url 'player' primary.media.id %}" class="hero-full-link" tabindex="-1" aria-hidden="true"></a>
-    <div class="hero-backdrop">
-        {% if primary.media.thumbnail_url %}
-        <img src="{{ primary.media.thumbnail_url }}" alt="" aria-hidden="true">
-        {% endif %}
-    </div>
-    <div class="hero-corner">
-        <span class="stamp {{ primary.media.media_type|type_stamp_class }}">{{ primary.media.media_type|type_label }}</span>
-    </div>
-    <div class="hero-content">
-        <div class="hero-eyebrow">
-            <span class="dot"></span>
-            Continue Watching &middot; {{ primary.media.album.title }}
-        </div>
-        <h1 class="hero-title">{{ primary.media.title }}</h1>
-        <div class="hero-sub">
-            {% if primary.media.duration_seconds %}
-            <span>{{ primary.position_seconds|format_duration }} / {{ primary.media.duration_seconds|format_duration }}</span>
-            <span>&middot;</span>
-            {% endif %}
-            <span>{{ primary|progress_percent }}% through</span>
-        </div>
-        {% if primary.media.duration_seconds %}
-        <div class="hero-progress-wrap">
-            <div class="hero-progress-bar" style="width:{{ primary|progress_percent }}%;"></div>
-        </div>
-        {% endif %}
-        <div class="hero-actions">
-            <a href="{% url 'player' primary.media.id %}" class="hero-btn-primary" style="position:relative;z-index:3;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
-                Resume
-            </a>
-            <a href="{% url 'album-detail' primary.media.album.id %}" class="hero-btn-ghost" style="position:relative;z-index:3;">
-                View Album
-            </a>
-        </div>
-    </div>
-</section>
-{% endwith %}
+{% if hero_record %}
+{% include "partials/media_hero.html" with media=hero_record.media hero_record=hero_record %}
 
-{% comment %} Continue Watching carousel {% endcomment %}
+{% elif featured_media %}
+{% include "partials/media_hero.html" with media=featured_media %}
+
+{% else %}
+<div class="topbar">
+    <div class="eyebrow">Personal Archive</div>
+    <h1 class="wordmark">Hyaku<em>take</em></h1>
+    {% if album_total %}
+    <p class="tagline">Browse the shelf below.</p>
+    <div class="home-stat-bar">
+        <div class="home-stat-item">
+            <span class="num mono">{{ album_total|stringformat:"02d" }}</span>
+            <span class="lbl">Albums</span>
+        </div>
+    </div>
+    {% else %}
+    <p class="tagline">Nothing on the shelf yet. Add albums via the admin panel.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if resume_page.object_list %}
 <section class="carousel-section" data-carousel>
     <div class="carousel-header">
         <span class="section-label">Continue Watching</span>
@@ -97,46 +78,6 @@
         </div>
     </div>
 </section>
-
-{% elif featured_media %}
-<a href="{% url 'player' featured_media.id %}" class="featured-hero">
-    <div class="featured-art">
-        {% if featured_media.thumbnail_url %}
-        <img src="{{ featured_media.thumbnail_url }}" alt="{{ featured_media.title }}" loading="lazy">
-        {% else %}
-        <div class="placeholder-thumb">{{ featured_media.title|slice:":1"|upper }}</div>
-        {% endif %}
-    </div>
-    <div class="featured-body">
-        <div class="featured-eyebrow">{{ featured_media.album.title }} &middot; {{ featured_media.media_type|type_label }}</div>
-        <div class="featured-title">{{ featured_media.title }}</div>
-        <div class="featured-sub">
-            <span class="stamp {{ featured_media.media_type|type_stamp_class }}">{{ featured_media.media_type|type_label }}</span>
-            <span>Newest on the shelf</span>
-        </div>
-        <span class="featured-cta">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
-            Play now
-        </span>
-    </div>
-</a>
-
-{% else %}
-<div class="topbar">
-    <div class="eyebrow">Personal Archive</div>
-    <h1 class="wordmark">Hyaku<em>take</em></h1>
-    {% if album_total %}
-    <p class="tagline">Browse the shelf below.</p>
-    <div class="home-stat-bar">
-        <div class="home-stat-item">
-            <span class="num mono">{{ album_total|stringformat:"02d" }}</span>
-            <span class="lbl">Albums</span>
-        </div>
-    </div>
-    {% else %}
-    <p class="tagline">Nothing on the shelf yet. Add albums via the admin panel.</p>
-    {% endif %}
-</div>
 {% endif %}
 
 {% comment %} Albums carousel {% endcomment %}
@@ -145,7 +86,7 @@
     <div class="carousel-header">
         <div style="display:flex;align-items:center;gap:14px;">
             <span class="section-label">
-                {% if resume_page.object_list or featured_media %}Your Collection{% else %}Albums{% endif %}
+                {% if resume_page.object_list or hero_record or featured_media %}Your Collection{% else %}Albums{% endif %}
             </span>
             {% if album_total %}
             <span class="catalog-count mono" style="font-size:11px;"><strong>{{ album_total }}</strong> album{{ album_total|pluralize }}</span>
@@ -183,7 +124,7 @@
     </div>
 </section>
 
-{% elif not resume_page.object_list and not featured_media %}
+{% elif not hero_record and not featured_media %}
 <div class="empty-state">
     <div class="glyph">Nothing filed here</div>
     <p>No albums on the shelf yet. Add content via the <a href="/admin/">admin panel</a>.</p>

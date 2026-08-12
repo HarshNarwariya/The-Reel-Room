@@ -35,6 +35,16 @@
         return match ? decodeURIComponent(match[1]) : "";
     }
 
+    function touchViewHistory() {
+        if (mediaType === "image" || mediaType === "text") {
+            saveProgress(0, true);
+            return;
+        }
+        if (mediaType === "video" || mediaType === "audio") {
+            saveProgress(resumeSeconds > 0 ? resumeSeconds : 0, false);
+        }
+    }
+
     function saveProgress(position, completed) {
         fetch(updateUrl, {
             method: "POST",
@@ -456,13 +466,15 @@
         bindEpisodeShortcuts();
         positionResumePrompt();
         window.addEventListener("resize", positionResumePrompt);
+        touchViewHistory();
     } else if (element && (mediaType === "video" || mediaType === "audio")) {
         bindResumePrompt();
         bindPlaybackOptions();
         bindBufferingLoader();
         bindProgressTracking();
         bindEpisodeShortcuts();
+        touchViewHistory();
     } else if (mediaType === "image" || mediaType === "text") {
-        saveProgress(0, true);
+        touchViewHistory();
     }
 })();

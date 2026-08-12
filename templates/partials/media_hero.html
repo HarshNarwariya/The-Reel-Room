@@ -1,0 +1,64 @@
+{% load content_extras %}
+<section class="page-hero">
+    <div class="hero-art-wrap">
+        {% if media.thumbnail_url %}
+        <img src="{{ media.thumbnail_url }}" alt="{{ media.title }}" loading="lazy">
+        {% else %}
+        <div class="hero-art-placeholder">{{ media.title|slice:":1"|upper }}</div>
+        {% endif %}
+        <div class="hero-art-badge">
+            <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+        </div>
+        {% if hero_record and media.duration_seconds and not hero_record.completed %}
+        <div class="hero-art-progress">
+            <div class="hero-art-progress-fill" style="width:{{ hero_record|progress_percent }}%;"></div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="hero-content">
+        <div class="hero-eyebrow">
+            <span class="dot"></span>
+            {% if hero_record %}
+                {% if hero_record.completed %}
+                Recently Viewed &middot; {{ media.album.title }}
+                {% else %}
+                Continue Watching &middot; {{ media.album.title }}
+                {% endif %}
+            {% else %}
+            {{ media.album.title }} &middot; Newest on the shelf
+            {% endif %}
+        </div>
+        <h1 class="hero-title">{{ media.title }}</h1>
+        <div class="hero-sub">
+            {% if hero_record %}
+                {% if hero_record.completed %}
+                <span>{{ media|counter_label }}</span>
+                <span>&middot;</span>
+                <span>Viewed {{ hero_record.updated_at|timesince }} ago</span>
+                {% elif media.duration_seconds %}
+                <span>{{ hero_record.position_seconds|format_duration }} / {{ media.duration_seconds|format_duration }}</span>
+                <span>&middot;</span>
+                <span>{{ hero_record|progress_percent }}% through</span>
+                {% else %}
+                <span>{{ media|counter_label }}</span>
+                <span>&middot;</span>
+                <span>Updated {{ hero_record.updated_at|timesince }} ago</span>
+                {% endif %}
+            {% else %}
+            <span>{{ media|counter_label }}</span>
+            {% endif %}
+        </div>
+        {% if hero_record and media.duration_seconds and not hero_record.completed %}
+        <div class="hero-progress-wrap">
+            <div class="hero-progress-bar" style="width:{{ hero_record|progress_percent }}%;"></div>
+        </div>
+        {% endif %}
+        <div class="hero-actions">
+            <a href="{% url 'player' media.id %}" class="hero-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
+                {% if media.media_type == "video" or media.media_type == "audio" %}Resume{% else %}Open{% endif %}
+            </a>
+            <a href="{% url 'album-detail' media.album.id %}" class="hero-btn-ghost">View Album</a>
+        </div>
+    </div>
+</section>
