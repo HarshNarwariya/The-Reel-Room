@@ -3,15 +3,6 @@
 
 {% block title %}About — Hyakutake{% endblock %}
 
-{% block extra_head %}
-<style>
-@media (max-width: 640px) {
-    .about-two-col { grid-template-columns: 1fr !important; }
-    .about-personal-row { grid-template-columns: repeat(3,1fr) !important; }
-}
-</style>
-{% endblock %}
-
 {% block content %}
 
 {% comment %} Mosaic hero {% endcomment %}
@@ -69,9 +60,9 @@
 </div>
 
 {% comment %} Two-column: personal progress + format breakdown {% endcomment %}
-<div class="about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:48px;">
+<div class="about-two-col">
 
-    <div class="about-section" style="margin-bottom:0;">
+    <div class="about-section about-section--flush">
         <h2 class="about-section-title">Your <em>Progress</em></h2>
         <div class="about-personal-row">
             <div class="about-personal-card">
@@ -87,20 +78,20 @@
                 <div class="about-personal-label">In progress</div>
             </div>
         </div>
-        <div style="margin-top:16px;padding:16px 18px;background:var(--surface);border:1px solid var(--border-light);border-radius:var(--r-md);box-shadow:var(--shadow-xs);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="font-size:13px;font-weight:600;color:var(--text-1);">Completion rate</span>
-                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;">
+        <div class="about-progress-card">
+            <div class="about-progress-card-head">
+                <span class="about-progress-card-title">Completion rate</span>
+                <span class="about-progress-card-val">
                     {% if user_stats.watched %}{% widthratio user_stats.completed user_stats.watched 100 %}%{% else %}&mdash;{% endif %}
                 </span>
             </div>
-            <div class="format-bar-wrap" style="height:8px;border-radius:99px;">
+            <div class="format-bar-wrap about-progress-bar">
                 <span class="format-bar" style="width:{% if user_stats.watched %}{% widthratio user_stats.completed user_stats.watched 100 %}{% else %}0{% endif %}%;border-radius:99px;"></span>
             </div>
         </div>
     </div>
 
-    <div class="about-section" style="margin-bottom:0;">
+    <div class="about-section about-section--flush">
         <h2 class="about-section-title">By <em>Format</em></h2>
         <div class="about-format-grid">
             <div class="about-format-item">
@@ -147,7 +138,7 @@
 {% if all_albums %}
 <section class="about-section">
     <h2 class="about-section-title">All <em>Collections</em></h2>
-    <section class="carousel-section" style="margin-bottom:0;" data-carousel>
+    <section class="carousel-section about-carousel" data-carousel>
         <div class="carousel-header">
             <span class="catalog-count mono"><strong>{{ album_total }}</strong> album{{ album_total|pluralize }}</span>
             <div class="carousel-nav-btns">
@@ -162,24 +153,21 @@
         <div class="carousel-track-wrap">
             <div class="carousel-track" data-carousel-track>
                 {% for album in all_albums %}
-                <a href="{% url 'album-detail' album.id %}" class="carousel-card carousel-card--album" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
-                    <div class="carousel-art">
+                <a href="{% url 'album-detail' album.id %}" class="album-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+                    <div class="card-frame">
                         {% if album.thumbnail_url %}
                         <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
                         {% else %}
                         <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
                         {% endif %}
-                        <div class="carousel-play-overlay"></div>
-                        <div class="carousel-art-badge">
-                            <span class="corner-tag">{{ album.media_items.count }}</span>
-                        </div>
+                        <div class="corner-tag">{{ album.media_items.count }}</div>
                     </div>
-                    <div class="carousel-info">
-                        <div class="carousel-card-title">{{ album.title }}</div>
+                    <div class="card-body">
+                        <h2 class="card-title">{{ album.title }}</h2>
                         {% if album.description %}
-                        <div class="carousel-card-sub">{{ album.description|truncatechars:44 }}</div>
+                        <p class="card-desc">{{ album.description|truncatechars:44 }}</p>
                         {% else %}
-                        <div class="carousel-card-sub">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+                        <p class="card-desc">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</p>
                         {% endif %}
                     </div>
                 </a>
@@ -188,8 +176,8 @@
         </div>
     </section>
     {% if album_total > 24 %}
-    <div style="text-align:center;margin-top:22px;">
-        <a href="{% url 'archive' %}" class="btn-nav" style="display:inline-flex;">
+    <div class="about-view-all">
+        <a href="{% url 'archive' %}" class="btn-nav">
             View all {{ album_total }} collections &rarr;
         </a>
     </div>
@@ -197,13 +185,9 @@
 </section>
 {% endif %}
 
-<div style="text-align:center;padding:40px 20px 0;border-top:1px solid var(--border-light);">
-    <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-0.02em;color:var(--text-1);margin-bottom:8px;">
-        Hyaku<em style="font-style:italic;color:var(--accent);font-weight:450;">take</em>
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3);">
-        Personal Media Archive &middot; Private Collection
-    </div>
+<div class="about-footer">
+    <div class="about-footer-brand">Hyaku<em>take</em></div>
+    <div class="about-footer-tag">Personal Media Archive &middot; Private Collection</div>
 </div>
 
 {% endblock %}

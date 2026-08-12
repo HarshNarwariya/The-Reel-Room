@@ -64,34 +64,31 @@
 </div>
 
 {% if media_page.object_list %}
-<div class="ledger-header">
-    <span class="col-label">#</span>
-    <span class="col-label"></span>
-    <span class="col-label">Title</span>
-    <span class="col-label col-right col-duration">Duration</span>
-</div>
-<div class="ledger">
+<div class="media-grid">
     {% for item in media_page %}
-    <a href="{% url 'player' item.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
-        <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
-        <div class="row-thumb">
+    <a href="{% url 'player' item.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+        <div class="media-card-art">
             {% if item.thumbnail_url %}
             <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}
-            <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
+            <div class="media-card-overlay">
+                <div class="media-card-play-ring">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
+                </div>
             </div>
-        </div>
-        <div class="row-main">
-            <div class="row-title-line">
-                <span class="row-title">{{ item.title }}</span>
+            <div class="media-card-top">
                 <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
             </div>
-            <div class="row-sub">{{ album.title }}</div>
+            <div class="media-card-bottom">
+                <span class="media-card-duration mono">{{ item|counter_label }}</span>
+            </div>
         </div>
-        <div class="counter">{{ item|counter_label }}</div>
+        <div class="media-card-body">
+            <div class="media-card-title">{{ item.title }}</div>
+            <div class="media-card-album mono">Entry {{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
+        </div>
     </a>
     {% endfor %}
 </div>
