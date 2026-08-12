@@ -30,10 +30,44 @@
          data-media-type="{{ media.media_type }}"
          data-update-url="/api/history/update/"
          data-sibling-ids='{{ sibling_ids_json }}'
+         {% if use_drive_preview %}data-use-drive-preview="true"{% endif %}
          {% if prev_media %}data-prev-url="{% url 'player' prev_media.id %}"{% endif %}
          {% if next_media %}data-next-url="{% url 'player' next_media.id %}"{% endif %}>
 
-        {% if media.media_type == "video" %}
+        {% if use_drive_preview and preview_url %}
+        <div class="media-player-drive-wrap">
+            <div class="media-player-drive-frame">
+                <iframe src="{{ preview_url }}"
+                        class="media-player-drive-iframe"
+                        title="{{ media.title }}"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen
+                        loading="lazy"></iframe>
+            </div>
+            <div class="media-player-drive-badge">
+                <span class="stamp stamp-text mono">Embedded preview</span>
+            </div>
+        </div>
+
+        <div class="player-meta-card">
+            <div class="player-meta-title-row">
+                <div>
+                    <div class="player-meta-badges">
+                        <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+                        <span class="row-sub mono">{{ media.album.title }}</span>
+                    </div>
+                    <div class="player-meta-title" style="margin-top:8px;">{{ media.title }}</div>
+                </div>
+                <div class="counter">{{ media|counter_label }}</div>
+            </div>
+            {% if can_direct_drive_preview %}
+            <p class="player-drive-note mono">
+                Embedded preview — switch playback source in <a href="{% url 'settings' %}">Settings</a>.
+            </p>
+            {% endif %}
+        </div>
+
+        {% elif media.media_type == "video" %}
         <div class="media-player media-player--video">
             <div class="media-player-stage">
                 <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
@@ -41,7 +75,7 @@
                     <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
                 <video id="media-element" playsinline
-                       {% if media.thumbnail_url %}data-poster="{{ media.thumbnail_url }}"{% endif %}>
+                       {% if media_thumbnail_url %}data-poster="{{ media_thumbnail_url }}"{% endif %}>
                     {% if media.file_url %}
                     <source src="{{ media.file_url }}" type="video/mp4">
                     {% endif %}
@@ -94,8 +128,8 @@
                     <div class="media-loader-ring" aria-hidden="true"></div>
                     <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
-                {% if media.thumbnail_url %}
-                <img src="{{ media.thumbnail_url }}" alt="{{ media.title }}" class="media-player-audio-art">
+                {% if media_thumbnail_url %}
+                <img src="{{ media_thumbnail_url }}" alt="{{ media.title }}" class="media-player-audio-art">
                 {% else %}
                 <div class="media-player-audio-placeholder">{{ media.title|slice:":1"|upper }}</div>
                 {% endif %}

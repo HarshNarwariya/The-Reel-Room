@@ -6,8 +6,15 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 import json
 
-from .models import Album, Media, PlaybackHistory
-from .utils import media_text_body
+from .models import Album, Media, PlaybackHistory, UserProfile
+from .forms import UserSettingsForm
+from .permissions import can_direct_drive_preview
+from .utils import (
+    media_text_body,
+    resolve_media_preview_url,
+    resolve_media_thumbnail_url,
+    user_uses_drive_preview,
+)
 from .pagination import (
     PAGE_SIZE_ALBUMS,
     PAGE_SIZE_HISTORY,
@@ -119,7 +126,11 @@ def player(request, pk):
         resume_seconds = int(history.position_seconds)
     episode_index = index + 1 if index >= 0 else 1
     episode_total = len(siblings)
-    text_body = media_text_body(media) if media.media_type == Media.MediaType.TEXT else ""
+    use_drive_preview = user_uses_drive_preview(request.user) and bool(media.file_id)
+    preview_url = resolve_media_preview_url(media, request.user) if use_drive_preview else None
+    text_body = ""
+    if media.media_type == Media.MediaType.TEXT and not use_drive_preview:
+        text_body = media_text_body(media)
     return render(
         request,
         "content/player.html",
@@ -127,12 +138,16 @@ def player(request, pk):
             "media": media,
             "prev_media": prev_media,
             "next_media": next_media,
-            "resume_seconds": resume_seconds,
+            "resume_seconds": resume_seconds if not use_drive_preview else 0,
             "completed": history.completed if history else False,
             "episode_index": episode_index,
             "episode_total": episode_total,
             "sibling_ids_json": json.dumps(siblings),
             "text_body": text_body,
+            "use_drive_preview": use_drive_preview,
+            "preview_url": preview_url,
+            "can_direct_drive_preview": can_direct_drive_preview(request.user),
+            "media_thumbnail_url": resolve_media_thumbnail_url(media, request.user),
         },
     )
 
@@ -308,3 +323,39 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect("login")
+
+
+@login_required
+def settings_view(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    can_drive = can_direct_drive_preview(request.user)
+
+    if not can_drive and profile.preview_mode == UserProfile.PreviewMode.DRIVE:
+        profile.preview_mode = UserProfile.PreviewMode.PROXY
+        profile.save(update_fields=["preview_mode"])
+
+    if request.method == "POST":
+        form = UserSettingsForm(
+            request.POST,
+            instance=profile,
+            can_drive_preview=can_drive,
+        )
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Settings saved.")
+            return redirect("settings")
+    else:
+        form = UserSettingsForm(
+            instance=profile,
+            can_drive_preview=can_drive,
+        )
+
+    return render(
+        request,
+        "content/settings.html",
+        {
+            "form": form,
+            "can_direct_drive_preview": can_drive,
+            "profile": profile,
+        },
+    )

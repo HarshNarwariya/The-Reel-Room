@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
 from .models import Album, Media, PlaybackHistory
+from .utils import resolve_album_thumbnail_url, resolve_media_thumbnail_url
 
 
 class MediaSerializer(serializers.ModelSerializer):
     file_url = serializers.ReadOnlyField()
-    thumbnail_url = serializers.ReadOnlyField()
+    thumbnail_url = serializers.SerializerMethodField()
     album_title = serializers.CharField(source="album.title", read_only=True)
 
     class Meta:
@@ -27,10 +28,15 @@ class MediaSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at"]
 
+    def get_thumbnail_url(self, obj):
+        request = self.context.get("request")
+        user = request.user if request else None
+        return resolve_media_thumbnail_url(obj, user)
+
 
 class MediaListSerializer(serializers.ModelSerializer):
     file_url = serializers.ReadOnlyField()
-    thumbnail_url = serializers.ReadOnlyField()
+    thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Media
@@ -44,9 +50,14 @@ class MediaListSerializer(serializers.ModelSerializer):
             "duration_seconds",
         ]
 
+    def get_thumbnail_url(self, obj):
+        request = self.context.get("request")
+        user = request.user if request else None
+        return resolve_media_thumbnail_url(obj, user)
+
 
 class AlbumSerializer(serializers.ModelSerializer):
-    thumbnail_url = serializers.ReadOnlyField()
+    thumbnail_url = serializers.SerializerMethodField()
     media_items = MediaListSerializer(many=True, read_only=True)
     media_count = serializers.SerializerMethodField()
 
@@ -63,12 +74,17 @@ class AlbumSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    def get_thumbnail_url(self, obj):
+        request = self.context.get("request")
+        user = request.user if request else None
+        return resolve_album_thumbnail_url(obj, user)
+
     def get_media_count(self, obj):
         return obj.media_items.count()
 
 
 class AlbumListSerializer(serializers.ModelSerializer):
-    thumbnail_url = serializers.ReadOnlyField()
+    thumbnail_url = serializers.SerializerMethodField()
     media_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -81,6 +97,11 @@ class AlbumListSerializer(serializers.ModelSerializer):
             "media_count",
             "created_at",
         ]
+
+    def get_thumbnail_url(self, obj):
+        request = self.context.get("request")
+        user = request.user if request else None
+        return resolve_album_thumbnail_url(obj, user)
 
     def get_media_count(self, obj):
         return obj.media_items.count()

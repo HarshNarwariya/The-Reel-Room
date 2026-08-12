@@ -11,6 +11,7 @@
     var mediaId = parseInt(container.dataset.mediaId, 10);
     var mediaType = container.dataset.mediaType;
     var updateUrl = container.dataset.updateUrl;
+    var useDrivePreview = container.dataset.useDrivePreview === "true";
     var element = document.getElementById("media-element");
     var resumePrompt = document.getElementById("resumePrompt");
     var resumeSeconds = resumePrompt
@@ -36,6 +37,10 @@
     }
 
     function touchViewHistory() {
+        if (container.dataset.useDrivePreview === "true") {
+            saveProgress(0, true);
+            return;
+        }
         if (mediaType === "image" || mediaType === "text") {
             saveProgress(0, true);
             return;
@@ -416,6 +421,12 @@
                 window.location.href = container.dataset.nextUrl;
             }
         });
+    }
+
+    if (useDrivePreview) {
+        touchViewHistory();
+        bindEpisodeShortcuts();
+        return;
     }
 
     if (element && (mediaType === "video" || mediaType === "audio") && typeof Plyr !== "undefined") {

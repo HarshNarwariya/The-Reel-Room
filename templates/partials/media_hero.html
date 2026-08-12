@@ -1,8 +1,9 @@
 {% load content_extras %}
 <section class="page-hero">
     <div class="hero-art-wrap">
-        {% if media.thumbnail_url %}
-        <img src="{{ media.thumbnail_url }}" alt="{{ media.title }}" loading="lazy">
+        {% thumb_url media as media_thumb %}
+        {% if media_thumb %}
+        <img src="{{ media_thumb }}" alt="{{ media.title }}" loading="lazy">
         {% else %}
         <div class="hero-art-placeholder">{{ media.title|slice:":1"|upper }}</div>
         {% endif %}

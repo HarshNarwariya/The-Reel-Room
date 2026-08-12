@@ -34,8 +34,9 @@
     {% for album in albums_page %}
     <a href="{% url 'album-detail' album.id %}" class="album-card">
         <div class="card-frame">
-            {% if album.thumbnail_url %}
-            <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+            {% thumb_url album as album_thumb %}
+            {% if album_thumb %}
+            <img src="{{ album_thumb }}" alt="{{ album.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
             {% endif %}
@@ -69,8 +70,9 @@
     <a href="{% url 'player' item.id %}" class="ledger-row">
         <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
         <div class="row-thumb">
-            {% if item.thumbnail_url %}
-            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% thumb_url item as item_thumb %}
+            {% if item_thumb %}
+            <img src="{{ item_thumb }}" alt="{{ item.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}

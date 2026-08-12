@@ -47,6 +47,9 @@ class Media(models.Model):
     class Meta:
         ordering = ["order", "id"]
         verbose_name_plural = "media"
+        permissions = [
+            ("direct_drive_preview", "Can use direct preview"),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.media_type})"
@@ -62,6 +65,30 @@ class Media(models.Model):
         if self.media_type == self.MediaType.IMAGE and self.file_id:
             return build_file_url(self.file_id)
         return None
+
+
+class UserProfile(models.Model):
+    class PreviewMode(models.TextChoices):
+        PROXY = "proxy", "Proxy (Streamer)"
+        DRIVE = "drive", "Direct"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    preview_mode = models.CharField(
+        max_length=10,
+        choices=PreviewMode.choices,
+        default=PreviewMode.PROXY,
+    )
+
+    class Meta:
+        verbose_name = "user profile"
+        verbose_name_plural = "user profiles"
+
+    def __str__(self):
+        return f"{self.user.username} ({self.preview_mode})"
 
 
 class PlaybackHistory(models.Model):

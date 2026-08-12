@@ -27,6 +27,7 @@
             <a href="{% url 'archive' %}" {% if request.resolver_match.url_name == 'archive' %}class="active"{% endif %}>Archive</a>
             <a href="{% url 'history' %}" {% if request.resolver_match.url_name == 'history' %}class="active"{% endif %}>My&nbsp;List</a>
             <a href="{% url 'about' %}" {% if request.resolver_match.url_name == 'about' %}class="active"{% endif %}>About</a>
+            <a href="{% url 'settings' %}" {% if request.resolver_match.url_name == 'settings' %}class="active"{% endif %}>Settings</a>
             <span class="nav-user">{{ user.username }}</span>
             <a href="{% url 'logout' %}">Logout</a>
         </div>

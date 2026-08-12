@@ -47,8 +47,9 @@
             {% for record in resume_page %}
             <a href="{% url 'player' record.media.id %}" class="carousel-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.04s)">
                 <div class="carousel-art">
-                    {% if record.media.thumbnail_url %}
-                    <img src="{{ record.media.thumbnail_url }}" alt="{{ record.media.title }}" loading="lazy">
+                    {% thumb_url record.media as media_thumb %}
+                    {% if media_thumb %}
+                    <img src="{{ media_thumb }}" alt="{{ record.media.title }}" loading="lazy">
                     {% else %}
                     <div class="placeholder-thumb">{{ record.media.title|slice:":1"|upper }}</div>
                     {% endif %}
@@ -106,8 +107,9 @@
             {% for album in albums_page %}
             <a href="{% url 'album-detail' album.id %}" class="album-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.04s)">
                 <div class="card-frame">
-                    {% if album.thumbnail_url %}
-                    <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+                    {% thumb_url album as album_thumb %}
+                    {% if album_thumb %}
+                    <img src="{{ album_thumb }}" alt="{{ album.title }}" loading="lazy">
                     {% else %}
                     <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
                     {% endif %}

@@ -11,6 +11,7 @@ urlpatterns = [
     path("play/<int:pk>/", web_views.player, name="player"),
     path("history/", web_views.history_view, name="history"),
     path("about/", web_views.about_view, name="about"),
+    path("settings/", web_views.settings_view, name="settings"),
     path("login/", web_views.login_view, name="login"),
     path("logout/", web_views.logout_view, name="logout"),
 ]

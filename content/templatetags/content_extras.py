@@ -1,5 +1,8 @@
 from django import template
 
+from ..models import Album, Media
+from ..utils import resolve_album_thumbnail_url, resolve_media_thumbnail_url
+
 register = template.Library()
 
 
@@ -72,4 +75,15 @@ def pagination_url(context, page_number, page_param="page"):
 def page_row_index(counter, page_obj):
     start = (page_obj.number - 1) * page_obj.paginator.per_page
     return start + counter
+
+
+@register.simple_tag(takes_context=True)
+def thumb_url(context, obj):
+    request = context.get("request")
+    user = getattr(request, "user", None)
+    if isinstance(obj, Album):
+        return resolve_album_thumbnail_url(obj, user) or ""
+    if isinstance(obj, Media):
+        return resolve_media_thumbnail_url(obj, user) or ""
+    return ""
 

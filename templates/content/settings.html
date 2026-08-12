@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — Hyakutake{% endblock %}
+
+{% block content %}
+<div class="browse-header">
+    <div class="browse-header-text">
+        <div class="eyebrow">Account</div>
+        <h1 class="wordmark" style="font-size:clamp(28px,4vw,44px);margin-bottom:6px;">Playback <em>Settings</em></h1>
+        <p class="tagline" style="font-size:14px;">Choose how media previews are loaded in the player.</p>
+    </div>
+</div>
+
+<div class="settings-card">
+    <form method="post" class="settings-form">
+        {% csrf_token %}
+
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend mono">Preview source</legend>
+            <p class="settings-help">
+                <strong>Proxy</strong> streams files and thumbnails through your configured streamer service.
+                {% if can_direct_drive_preview %}
+                <strong>Direct</strong> embeds media in the player and loads thumbnails from the source file.
+                {% endif %}
+            </p>
+
+            <div class="settings-options">
+                {% for radio in form.preview_mode %}
+                <label class="settings-option">
+                    {{ radio.tag }}
+                    <span class="settings-option-body">
+                        <span class="settings-option-title">{{ radio.choice_label }}</span>
+                        {% if radio.choice_label == "Proxy (Streamer)" %}
+                        <span class="settings-option-desc">Routes playback through the streamer proxy — recommended default.</span>
+                        {% elif can_direct_drive_preview %}
+                        <span class="settings-option-desc">Embeds media preview in the player for all file types.</span>
+                        {% endif %}
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+
+            {% if form.preview_mode.errors %}
+            <div class="settings-errors">{{ form.preview_mode.errors }}</div>
+            {% endif %}
+        </fieldset>
+
+        {% if not can_direct_drive_preview %}
+        <p class="settings-note mono">
+            Direct preview is not enabled for your account. Contact an administrator to request access.
+        </p>
+        {% else %}
+        <p class="settings-note mono">
+            Direct preview does not support resume tracking or advanced player controls — items are marked viewed when opened.
+        </p>
+        {% endif %}
+
+        <div class="settings-actions">
+            <button type="submit" class="btn-nav settings-save-btn">Save settings</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

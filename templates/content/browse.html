@@ -52,8 +52,9 @@
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
         <div class="media-card-art">
-            {% if item.thumbnail_url %}
-            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+            {% thumb_url item as item_thumb %}
+            {% if item_thumb %}
+            <img src="{{ item_thumb }}" alt="{{ item.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}
