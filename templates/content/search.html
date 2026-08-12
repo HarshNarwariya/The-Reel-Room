@@ -4,6 +4,7 @@
 {% block title %}{% if query %}Search: {{ query }}{% else %}Search{% endif %} — Hyakutake{% endblock %}
 
 {% block content %}
+
 <div class="topbar">
     <div class="eyebrow">Catalog Index</div>
     <h1 class="wordmark">Search the <em>Archive</em></h1>
@@ -16,16 +17,19 @@
 </form>
 
 {% if query %}
-<p class="search-meta mono">
+<p class="search-meta mono" style="margin-bottom:24px;">
     {% if result_count %}
-    {{ result_count }} result{{ result_count|pluralize }} for “{{ query }}”
+    {{ result_count }} result{{ result_count|pluralize }} for &ldquo;{{ query }}&rdquo;
     {% else %}
-    No results for “{{ query }}”
+    No results for &ldquo;{{ query }}&rdquo;
     {% endif %}
 </p>
 
 {% if albums_page and albums_page.object_list %}
-<div class="section-label" style="margin:28px 0 16px;">Albums</div>
+<div class="section-hd" style="margin-bottom:16px;">
+    <span class="section-label">Albums</span>
+    <span class="catalog-count mono"><strong>{{ albums_page.paginator.count }}</strong> match{{ albums_page.paginator.count|pluralize:"es" }}</span>
+</div>
 <div class="shelf-grid">
     {% for album in albums_page %}
     <a href="{% url 'album-detail' album.id %}" class="album-card">
@@ -35,7 +39,7 @@
             {% else %}
             <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
             {% endif %}
-            <div class="corner-tag">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+            <div class="corner-tag">{{ album.media_items.count }}</div>
         </div>
         <div class="card-body">
             <h2 class="card-title">{{ album.title }}</h2>
@@ -50,7 +54,16 @@
 {% endif %}
 
 {% if media_page and media_page.object_list %}
-<div class="section-label" style="margin:28px 0 16px;">Media</div>
+<div class="section-hd" style="margin:32px 0 14px;">
+    <span class="section-label">Media</span>
+    <span class="catalog-count mono"><strong>{{ media_page.paginator.count }}</strong> match{{ media_page.paginator.count|pluralize:"es" }}</span>
+</div>
+<div class="ledger-header">
+    <span class="col-label">#</span>
+    <span class="col-label"></span>
+    <span class="col-label">Title &amp; Album</span>
+    <span class="col-label col-right col-duration">Duration</span>
+</div>
 <div class="ledger">
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="ledger-row">
@@ -62,7 +75,7 @@
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}
             <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
             </div>
         </div>
         <div class="row-main">
@@ -88,7 +101,9 @@
 
 {% else %}
 <div class="search-hints">
-    <div class="section-label">Quick filters</div>
+    <div class="section-hd" style="margin-bottom:14px;">
+        <span class="section-label">Quick filters</span>
+    </div>
     <div class="tabs">
         <a href="{% url 'browse' %}?type=video" class="tab-stub">Video</a>
         <a href="{% url 'browse' %}?type=audio" class="tab-stub">Audio</a>

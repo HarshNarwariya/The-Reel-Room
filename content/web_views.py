@@ -206,14 +206,19 @@ def archive_view(request):
         image=Count("id", filter=Q(media_type="image")),
         text=Count("id", filter=Q(media_type="text")),
     )
+    watched = PlaybackHistory.objects.filter(user=request.user).count()
+    completed = PlaybackHistory.objects.filter(user=request.user, completed=True).count()
+    in_progress = PlaybackHistory.objects.filter(user=request.user, completed=False).count()
+    total = media_counts["total"] or 0
+    # Pre-compute SVG ring chart offset (circumference of r=46 circle ≈ 289.03)
+    _circ = 289.03
+    ring_offset = round(_circ - (_circ * completed / watched), 2) if watched else _circ
     user_stats = {
-        "watched": PlaybackHistory.objects.filter(user=request.user).count(),
-        "completed": PlaybackHistory.objects.filter(
-            user=request.user, completed=True
-        ).count(),
-        "in_progress": PlaybackHistory.objects.filter(
-            user=request.user, completed=False
-        ).count(),
+        "watched": watched,
+        "completed": completed,
+        "in_progress": in_progress,
+        "not_started": max(0, total - watched),
+        "ring_offset": ring_offset,
     }
     return render(
         request,
@@ -255,6 +260,42 @@ def login_view(request):
         return redirect(next_url)
 
     return render(request, "content/login.html", {"form": form})
+
+
+@login_required
+def about_view(request):
+    albums_qs = Album.objects.prefetch_related("media_items").order_by("-created_at")
+    media_counts = Media.objects.aggregate(
+        total=Count("id"),
+        video=Count("id", filter=Q(media_type="video")),
+        audio=Count("id", filter=Q(media_type="audio")),
+        image=Count("id", filter=Q(media_type="image")),
+        text=Count("id", filter=Q(media_type="text")),
+    )
+    user_stats = {
+        "watched": PlaybackHistory.objects.filter(user=request.user).count(),
+        "completed": PlaybackHistory.objects.filter(
+            user=request.user, completed=True
+        ).count(),
+        "in_progress": PlaybackHistory.objects.filter(
+            user=request.user, completed=False
+        ).count(),
+    }
+    # Collect up to 12 spotlight albums with thumbnails for the about hero mosaic
+    spotlight_albums = list(
+        albums_qs.filter(thumbnail_id__isnull=False).exclude(thumbnail_id="")[:12]
+    )
+    return render(
+        request,
+        "content/about.html",
+        {
+            "album_total": albums_qs.count(),
+            "media_counts": media_counts,
+            "user_stats": user_stats,
+            "spotlight_albums": spotlight_albums,
+            "all_albums": albums_qs[:24],
+        },
+    )
 
 
 def logout_view(request):

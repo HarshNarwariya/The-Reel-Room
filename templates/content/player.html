@@ -11,6 +11,20 @@
 
 {% block content %}
 <div class="player-page">
+
+    <div class="player-context-bar">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a href="{% url 'home' %}">Shelf</a>
+            <span class="sep">&rsaquo;</span>
+            <a href="{% url 'album-detail' media.album.id %}">{{ media.album.title }}</a>
+            <span class="sep">&rsaquo;</span>
+            <span>{{ media.title|truncatechars:40 }}</span>
+        </nav>
+        {% if episode_total > 1 %}
+        <span class="ep-indicator mono">{{ episode_index }} / {{ episode_total }}</span>
+        {% endif %}
+    </div>
+
     <div id="player-container"
          data-media-id="{{ media.id }}"
          data-media-type="{{ media.media_type }}"
@@ -24,7 +38,7 @@
             <div class="media-player-stage">
                 <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
                     <div class="media-loader-ring" aria-hidden="true"></div>
-                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading…</span>
+                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
                 <video id="media-element" playsinline
                        {% if media.thumbnail_url %}data-poster="{{ media.thumbnail_url }}"{% endif %}>
@@ -41,25 +55,36 @@
                             <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
                         </div>
                     </div>
-                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">×</button>
+                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">&times;</button>
                     <div class="resume-prompt-countdown" aria-hidden="true"></div>
                 </div>
                 {% endif %}
             </div>
             <div class="filmstrip" aria-hidden="true"></div>
         </div>
-        <div class="modal-meta">
-            <div>
-                <div class="meta-stamp-row">
-                    <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
-                    <span class="row-sub mono">{{ media.album.title }}</span>
-                    {% if episode_total > 1 %}
-                    <span class="row-sub mono">· {{ episode_index }} / {{ episode_total }}</span>
-                    {% endif %}
+
+        <div class="player-meta-card">
+            <div class="player-meta-title-row">
+                <div>
+                    <div class="player-meta-badges">
+                        <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+                        <span class="row-sub mono">{{ media.album.title }}</span>
+                    </div>
+                    <div class="player-meta-title" style="margin-top:8px;">{{ media.title }}</div>
                 </div>
-                <div class="modal-title">{{ media.title }}</div>
+                <div class="counter">{% if media.duration_seconds %}{{ media.duration_seconds|format_duration }}{% else %}&mdash;:&mdash;{% endif %}</div>
             </div>
-            <div class="counter">{% if media.duration_seconds %}{{ media.duration_seconds|format_duration }}{% else %}—:—{% endif %}</div>
+            <div class="playback-options" id="playbackOptions" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
+                <div class="playback-options-label mono">Playback</div>
+                <label class="playback-toggle">
+                    <input type="checkbox" id="autoplayToggle" checked>
+                    <span>Autoplay next</span>
+                </label>
+                <div class="playback-mode" id="autoplayModeGroup">
+                    <button type="button" class="mode-stub active" data-mode="order">In order</button>
+                    <button type="button" class="mode-stub" data-mode="random">Random</button>
+                </div>
+            </div>
         </div>
 
         {% elif media.media_type == "audio" %}
@@ -68,11 +93,14 @@
                 <div class="vinyl" id="vinylDisc"></div>
                 <div class="media-loader media-loader--audio is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
                     <div class="media-loader-ring" aria-hidden="true"></div>
-                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading…</span>
+                    <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
             </div>
             <div class="audio-title">{{ media.title }}</div>
-            <div class="audio-sub">{{ media.album.title }} · <span class="stamp {{ media.media_type|type_stamp_class }}" style="margin-left:4px;">{{ media.media_type|type_label }}</span></div>
+            <div class="audio-sub">
+                {{ media.album.title }}
+                <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+            </div>
             <div class="media-player media-player--audio">
                 <audio id="media-element">
                     {% if media.file_url %}
@@ -88,14 +116,25 @@
                             <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
                         </div>
                     </div>
-                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">×</button>
+                    <button type="button" class="resume-dismiss" id="resumeDismiss" aria-label="Dismiss">&times;</button>
                     <div class="resume-prompt-countdown" aria-hidden="true"></div>
                 </div>
                 {% endif %}
             </div>
             {% if media.duration_seconds %}
-            <div class="counter" style="display:inline-block; margin-top:14px;">{{ media.duration_seconds|format_duration }}</div>
+            <div class="counter" style="display:inline-block;margin-top:14px;">{{ media.duration_seconds|format_duration }}</div>
             {% endif %}
+            <div class="playback-options" id="playbackOptions" style="margin-top:20px;text-align:left;">
+                <div class="playback-options-label mono">Playback</div>
+                <label class="playback-toggle">
+                    <input type="checkbox" id="autoplayToggle" checked>
+                    <span>Autoplay next</span>
+                </label>
+                <div class="playback-mode" id="autoplayModeGroup">
+                    <button type="button" class="mode-stub active" data-mode="order">In order</button>
+                    <button type="button" class="mode-stub" data-mode="random">Random</button>
+                </div>
+            </div>
         </div>
 
         {% elif media.media_type == "image" %}
@@ -132,35 +171,37 @@
         </div>
         {% endif %}
 
-        {% if media.media_type == "video" or media.media_type == "audio" %}
-        <div class="playback-options" id="playbackOptions">
-            <div class="playback-options-label mono">Playback</div>
-            <label class="playback-toggle">
-                <input type="checkbox" id="autoplayToggle" checked>
-                <span>Autoplay</span>
-            </label>
-            <div class="playback-mode" id="autoplayModeGroup">
-                <button type="button" class="mode-stub active" data-mode="order">In order</button>
-                <button type="button" class="mode-stub" data-mode="random">Random</button>
-            </div>
-        </div>
-        {% endif %}
-
         <div class="player-nav-row">
-            <a href="{% url 'album-detail' media.album.id %}" class="back-btn" style="margin-bottom:0;">← Back to album</a>
-            <div style="margin-left:auto; display:flex; gap:12px; flex-wrap:wrap;">
-                {% if prev_media %}
-                <a href="{% url 'player' prev_media.id %}" class="btn-nav" id="navPrev">‹ Previous</a>
-                {% else %}
-                <span class="btn-nav disabled">‹ Previous</span>
-                {% endif %}
+            {% if prev_media %}
+            <a href="{% url 'player' prev_media.id %}" class="btn-nav" id="navPrev">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                Previous
+            </a>
+            {% else %}
+            <span class="btn-nav disabled">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                Previous
+            </span>
+            {% endif %}
+
+            <div style="margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <a href="{% url 'album-detail' media.album.id %}" class="btn-nav">
+                    All episodes
+                </a>
                 {% if next_media %}
-                <a href="{% url 'player' next_media.id %}" class="btn-nav" id="navNext">Next ›</a>
+                <a href="{% url 'player' next_media.id %}" class="btn-nav" id="navNext" style="background:var(--accent);color:#fff;border-color:var(--accent);">
+                    Next
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                </a>
                 {% else %}
-                <span class="btn-nav disabled">Next ›</span>
+                <span class="btn-nav disabled">
+                    Next
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                </span>
                 {% endif %}
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

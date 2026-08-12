@@ -4,57 +4,75 @@
 {% block title %}Browse — Hyakutake{% endblock %}
 
 {% block content %}
-<div class="topbar">
-    <div class="eyebrow">Full Catalog</div>
-    <h1 class="wordmark">Browse the <em>Ledger</em></h1>
-    <p class="tagline">Every logged item across all albums — filter by format and jump straight in.</p>
-    <div class="shelf-stat">
-        <div class="num mono">{{ media_counts.all|stringformat:"02d" }}</div>
-        <div class="label">Total entries</div>
+
+{% comment %} Page header {% endcomment %}
+<div class="browse-header">
+    <div class="browse-header-text">
+        <div class="eyebrow">Full Catalog</div>
+        <h1 class="wordmark" style="font-size:clamp(28px,4vw,44px);margin-bottom:6px;">Browse the <em>Ledger</em></h1>
+        <p class="tagline" style="font-size:14px;">Every logged item across all albums &mdash; filter by format and jump straight in.</p>
+    </div>
+    <div class="browse-total-badge">
+        <span class="browse-total-num mono">{{ media_counts.all }}</span>
+        <span class="browse-total-label">total entries</span>
     </div>
 </div>
 
-<div class="tabs">
-    <a href="{% url 'browse' %}?type=all" class="tab-stub{% if active_type == 'all' %} active{% endif %}">
-        All <span class="count mono">{{ media_counts.all }}</span>
+{% comment %} Filter tabs {% endcomment %}
+<div class="browse-filter-bar">
+    <a href="{% url 'browse' %}?type=all" class="browse-filter-pill{% if active_type == 'all' %} active{% endif %}">
+        <span>All</span>
+        <span class="pill-count mono">{{ media_counts.all }}</span>
     </a>
-    <a href="{% url 'browse' %}?type=video" class="tab-stub{% if active_type == 'video' %} active{% endif %}">
-        Video <span class="count mono">{{ media_counts.video }}</span>
+    <a href="{% url 'browse' %}?type=video" class="browse-filter-pill{% if active_type == 'video' %} active{% endif %} pill--video">
+        <span class="pill-dot pill-dot--video"></span>
+        <span>Video</span>
+        <span class="pill-count mono">{{ media_counts.video }}</span>
     </a>
-    <a href="{% url 'browse' %}?type=audio" class="tab-stub{% if active_type == 'audio' %} active{% endif %}">
-        Audio <span class="count mono">{{ media_counts.audio }}</span>
+    <a href="{% url 'browse' %}?type=audio" class="browse-filter-pill{% if active_type == 'audio' %} active{% endif %} pill--audio">
+        <span class="pill-dot pill-dot--audio"></span>
+        <span>Audio</span>
+        <span class="pill-count mono">{{ media_counts.audio }}</span>
     </a>
-    <a href="{% url 'browse' %}?type=image" class="tab-stub{% if active_type == 'image' %} active{% endif %}">
-        Image <span class="count mono">{{ media_counts.image }}</span>
+    <a href="{% url 'browse' %}?type=image" class="browse-filter-pill{% if active_type == 'image' %} active{% endif %} pill--image">
+        <span class="pill-dot pill-dot--image"></span>
+        <span>Image</span>
+        <span class="pill-count mono">{{ media_counts.image }}</span>
     </a>
-    <a href="{% url 'browse' %}?type=text" class="tab-stub{% if active_type == 'text' %} active{% endif %}">
-        Text <span class="count mono">{{ media_counts.text }}</span>
+    <a href="{% url 'browse' %}?type=text" class="browse-filter-pill{% if active_type == 'text' %} active{% endif %} pill--text">
+        <span class="pill-dot pill-dot--text"></span>
+        <span>Text</span>
+        <span class="pill-count mono">{{ media_counts.text }}</span>
     </a>
 </div>
 
+{% comment %} Media poster grid {% endcomment %}
 {% if media_page.object_list %}
-<div class="ledger">
+<div class="media-grid">
     {% for item in media_page %}
-    <a href="{% url 'player' item.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.02s)">
-        <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
-        <div class="row-thumb">
+    <a href="{% url 'player' item.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+        <div class="media-card-art">
             {% if item.thumbnail_url %}
             <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}
-            <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            <div class="media-card-overlay">
+                <div class="media-card-play-ring">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
+                </div>
             </div>
-        </div>
-        <div class="row-main">
-            <div class="row-title-line">
-                <span class="row-title">{{ item.title }}</span>
+            <div class="media-card-top">
                 <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
             </div>
-            <div class="row-sub">{{ item.album.title }}</div>
+            <div class="media-card-bottom">
+                <span class="media-card-duration mono">{{ item|counter_label }}</span>
+            </div>
         </div>
-        <div class="counter">{{ item|counter_label }}</div>
+        <div class="media-card-body">
+            <div class="media-card-title">{{ item.title }}</div>
+            <div class="media-card-album mono">{{ item.album.title }}</div>
+        </div>
     </a>
     {% endfor %}
 </div>
@@ -65,4 +83,5 @@
     <p>No media of this type in the archive yet.</p>
 </div>
 {% endif %}
+
 {% endblock %}

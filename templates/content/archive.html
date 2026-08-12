@@ -4,91 +4,187 @@
 {% block title %}Archive — Hyakutake{% endblock %}
 
 {% block content %}
-<div class="topbar">
-    <div class="eyebrow">Collection Stats</div>
-    <h1 class="wordmark">The <em>Archive</em></h1>
-    <p class="tagline">A snapshot of everything on the shelf and your personal viewing ledger.</p>
-</div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-num mono">{{ album_total|stringformat:"02d" }}</div>
-        <div class="stat-label">Albums</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-num mono">{{ media_counts.total|stringformat:"02d" }}</div>
-        <div class="stat-label">Total Media</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-num mono">{{ user_stats.watched|stringformat:"02d" }}</div>
-        <div class="stat-label">You've Watched</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-num mono">{{ user_stats.in_progress|stringformat:"02d" }}</div>
-        <div class="stat-label">In Progress</div>
+{% comment %} Dashboard header {% endcomment %}
+<div class="archive-dash-header">
+    <div>
+        <div class="eyebrow">Collection Stats</div>
+        <h1 class="wordmark" style="font-size:clamp(28px,4vw,44px);margin-bottom:6px;">The <em>Archive</em></h1>
+        <p class="tagline" style="font-size:14px;">Your complete library snapshot &mdash; every album, item, and your personal watching log.</p>
     </div>
 </div>
 
-<div class="section-label" style="margin:36px 0 16px;">By Format</div>
-<div class="format-breakdown">
-    <div class="format-row">
-        <span class="stamp stamp-video">VID</span>
-        <span class="format-name">Video</span>
-        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.video media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
-        <span class="format-count mono">{{ media_counts.video }}</span>
+{% comment %} Stats banner {% endcomment %}
+<div class="archive-stats-banner">
+    <div class="archive-stat-big">
+        <div class="archive-stat-num mono">{{ album_total|stringformat:"02d" }}</div>
+        <div class="archive-stat-label">Collections</div>
     </div>
-    <div class="format-row">
-        <span class="stamp stamp-audio">AUD</span>
-        <span class="format-name">Audio</span>
-        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.audio media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
-        <span class="format-count mono">{{ media_counts.audio }}</span>
+    <div class="archive-stat-divider"></div>
+    <div class="archive-stat-big">
+        <div class="archive-stat-num mono">{{ media_counts.total|default:"00"|stringformat:"02d" }}</div>
+        <div class="archive-stat-label">Total Items</div>
     </div>
-    <div class="format-row">
-        <span class="stamp stamp-image">IMG</span>
-        <span class="format-name">Image</span>
-        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.image media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
-        <span class="format-count mono">{{ media_counts.image }}</span>
+    <div class="archive-stat-divider"></div>
+    <div class="archive-stat-big">
+        <div class="archive-stat-num mono">{{ user_stats.completed|stringformat:"02d" }}</div>
+        <div class="archive-stat-label">Completed</div>
     </div>
-    <div class="format-row">
-        <span class="stamp stamp-text">TXT</span>
-        <span class="format-name">Text</span>
-        <span class="format-bar-wrap"><span class="format-bar" style="width:{% if media_counts.total %}{% widthratio media_counts.text media_counts.total 100 %}{% else %}0{% endif %}%;"></span></span>
-        <span class="format-count mono">{{ media_counts.text }}</span>
+    <div class="archive-stat-divider"></div>
+    <div class="archive-stat-big">
+        <div class="archive-stat-num mono">{{ user_stats.in_progress|stringformat:"02d" }}</div>
+        <div class="archive-stat-label">In Progress</div>
     </div>
 </div>
 
-{% if recent_page.object_list %}
-<div class="section-label" style="margin:36px 0 16px;">Recently Added</div>
-<div class="ledger">
-    {% for item in recent_page %}
-    <a href="{% url 'player' item.id %}" class="ledger-row">
-        <div class="row-index mono">{{ forloop.counter|page_row_index:recent_page|stringformat:"03d" }}</div>
-        <div class="row-thumb">
-            {% if item.thumbnail_url %}
-            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+{% comment %} Format breakdown + progress panels {% endcomment %}
+<div class="archive-panels">
+    <div class="archive-panel">
+        <div class="archive-panel-title">Format Breakdown</div>
+        <div class="archive-format-list">
+            <div class="archive-format-item">
+                <div class="archive-format-meta">
+                    <span class="stamp stamp-video">VID</span>
+                    <span class="archive-format-name">Video</span>
+                    <span class="archive-format-count mono">{{ media_counts.video }}</span>
+                </div>
+                <div class="archive-bar-track">
+                    <div class="archive-bar-fill archive-bar--video" style="width:{% if media_counts.total %}{% widthratio media_counts.video media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            <div class="archive-format-item">
+                <div class="archive-format-meta">
+                    <span class="stamp stamp-audio">AUD</span>
+                    <span class="archive-format-name">Audio</span>
+                    <span class="archive-format-count mono">{{ media_counts.audio }}</span>
+                </div>
+                <div class="archive-bar-track">
+                    <div class="archive-bar-fill archive-bar--audio" style="width:{% if media_counts.total %}{% widthratio media_counts.audio media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            <div class="archive-format-item">
+                <div class="archive-format-meta">
+                    <span class="stamp stamp-image">IMG</span>
+                    <span class="archive-format-name">Image</span>
+                    <span class="archive-format-count mono">{{ media_counts.image }}</span>
+                </div>
+                <div class="archive-bar-track">
+                    <div class="archive-bar-fill archive-bar--image" style="width:{% if media_counts.total %}{% widthratio media_counts.image media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            <div class="archive-format-item">
+                <div class="archive-format-meta">
+                    <span class="stamp stamp-text">TXT</span>
+                    <span class="archive-format-name">Text</span>
+                    <span class="archive-format-count mono">{{ media_counts.text }}</span>
+                </div>
+                <div class="archive-bar-track">
+                    <div class="archive-bar-fill archive-bar--text" style="width:{% if media_counts.total %}{% widthratio media_counts.text media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="archive-panel">
+        <div class="archive-panel-title">Your Activity</div>
+        <div class="archive-activity-ring-wrap">
+        {% if user_stats.watched %}
+            <div class="archive-ring-chart">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="46" stroke="var(--surface-3)" stroke-width="12"/>
+                    <circle cx="60" cy="60" r="46" stroke="var(--accent)" stroke-width="12"
+                        stroke-dasharray="289.03"
+                        stroke-dashoffset="{{ user_stats.ring_offset }}"
+                        stroke-linecap="round"
+                        transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="archive-ring-label">
+                    <div class="archive-ring-pct mono">{% widthratio user_stats.completed user_stats.watched 100 %}%</div>
+                    <div class="archive-ring-sub">done</div>
+                </div>
+            </div>
             {% else %}
-            <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+            <div class="archive-ring-chart">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="46" stroke="var(--surface-3)" stroke-width="12"/>
+                </svg>
+                <div class="archive-ring-label">
+                    <div class="archive-ring-pct mono">0%</div>
+                    <div class="archive-ring-sub">done</div>
+                </div>
+            </div>
             {% endif %}
-            <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            <div class="archive-activity-legend">
+                <div class="archive-legend-row">
+                    <span class="archive-legend-dot" style="background:var(--accent);"></span>
+                    <span class="archive-legend-label">Completed</span>
+                    <span class="archive-legend-val mono">{{ user_stats.completed }}</span>
+                </div>
+                <div class="archive-legend-row">
+                    <span class="archive-legend-dot" style="background:var(--teal);"></span>
+                    <span class="archive-legend-label">In progress</span>
+                    <span class="archive-legend-val mono">{{ user_stats.in_progress }}</span>
+                </div>
+                <div class="archive-legend-row">
+                    <span class="archive-legend-dot" style="background:var(--border);"></span>
+                    <span class="archive-legend-label">Not started</span>
+                    <span class="archive-legend-val mono">{{ user_stats.not_started }}</span>
+                </div>
             </div>
         </div>
-        <div class="row-main">
-            <div class="row-title-line">
-                <span class="row-title">{{ item.title }}</span>
-                <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
-            </div>
-            <div class="row-sub">{{ item.album.title }}</div>
-        </div>
-        <div class="counter">{{ item|counter_label }}</div>
-    </a>
-    {% endfor %}
+    </div>
 </div>
-{% include "partials/pagination.html" with page_obj=recent_page page_param="recent_page" %}
+
+{% comment %} Recently added carousel {% endcomment %}
+{% if recent_page.object_list %}
+<section class="carousel-section" data-carousel>
+    <div class="carousel-header">
+        <span class="section-label">Recently Added</span>
+        <div class="carousel-nav-btns">
+            <button class="carousel-btn" data-carousel-prev aria-label="Scroll left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="carousel-btn" data-carousel-next aria-label="Scroll right">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="carousel-track-wrap">
+        <div class="carousel-track" data-carousel-track>
+            {% for item in recent_page %}
+            <a href="{% url 'player' item.id %}" class="carousel-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+                <div class="carousel-art">
+                    {% if item.thumbnail_url %}
+                    <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">
+                    {% else %}
+                    <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
+                    {% endif %}
+                    <div class="carousel-play-overlay">
+                        <div class="carousel-play-ring">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
+                        </div>
+                    </div>
+                    <div class="carousel-art-badge">
+                        <span class="stamp {{ item.media_type|type_stamp_class }}">{{ item.media_type|type_label }}</span>
+                    </div>
+                </div>
+                <div class="carousel-info">
+                    <div class="carousel-card-title">{{ item.title }}</div>
+                    <div class="carousel-card-sub">{{ item.album.title }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endif %}
 
+{% comment %} All collections grid {% endcomment %}
 {% if albums_page.object_list %}
-<div class="section-label" style="margin:36px 0 16px;">All Collections</div>
+<div class="section-hd" style="margin:8px 0 16px;">
+    <span class="section-label">All Collections</span>
+    <span class="catalog-count mono"><strong>{{ album_total }}</strong> album{{ album_total|pluralize }}</span>
+</div>
 <div class="shelf-grid">
     {% for album in albums_page %}
     <a href="{% url 'album-detail' album.id %}" class="album-card">
@@ -98,8 +194,8 @@
             {% else %}
             <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
             {% endif %}
-            <div class="corner-tag">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
-            <div class="card-index">No. {{ forloop.counter|page_row_index:albums_page|stringformat:"02d" }}</div>
+            <div class="corner-tag">{{ album.media_items.count }}</div>
+            <div class="card-index">{{ forloop.counter|page_row_index:albums_page|stringformat:"02d" }}</div>
         </div>
         <div class="card-body">
             <h2 class="card-title">{{ album.title }}</h2>
@@ -110,4 +206,5 @@
 </div>
 {% include "partials/pagination.html" with page_obj=albums_page page_param="album_page" %}
 {% endif %}
+
 {% endblock %}

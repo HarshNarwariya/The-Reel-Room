@@ -4,26 +4,37 @@
 {% block title %}{{ album.title }} — Hyakutake{% endblock %}
 
 {% block content %}
-<a href="{% url 'home' %}" class="back-btn">← Back to the shelf</a>
+<a href="{% url 'home' %}" class="back-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to shelf
+</a>
 
-<div class="album-banner">
-    {% if album.thumbnail_url %}
-    <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}">
-    {% else %}
-    <div class="banner-placeholder">{{ album.title|slice:":1"|upper }}</div>
-    {% endif %}
-    <div class="album-head">
-        <div class="album-index">No. {{ album_index|stringformat:"02d" }} — {{ media_counts.all }} logged item{{ media_counts.all|pluralize }}</div>
+<div class="album-hero">
+    <div class="album-art-wrap">
+        {% if album.thumbnail_url %}
+        <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}">
+        {% else %}
+        <div class="album-art-placeholder">{{ album.title|slice:":1"|upper }}</div>
+        {% endif %}
+    </div>
+    <div class="album-meta">
+        <div class="album-index">Collection &numero; {{ album_index|stringformat:"02d" }}</div>
         <h1 class="album-title">{{ album.title }}</h1>
+
+        {% if album.description %}
+        <p class="album-desc" id="albumDesc">{{ album.description }}</p>
+        <button class="desc-toggle" id="descToggle" type="button" hidden>Read more</button>
+        {% endif %}
+
+        <div class="album-meta-stats">
+            <span class="meta-pill">{{ media_counts.all }} item{{ media_counts.all|pluralize }}</span>
+            {% if media_counts.video %}<span class="meta-pill meta-pill--video">{{ media_counts.video }} video</span>{% endif %}
+            {% if media_counts.audio %}<span class="meta-pill meta-pill--audio">{{ media_counts.audio }} audio</span>{% endif %}
+            {% if media_counts.image %}<span class="meta-pill meta-pill--image">{{ media_counts.image }} image</span>{% endif %}
+            {% if media_counts.text %}<span class="meta-pill meta-pill--text">{{ media_counts.text }} text</span>{% endif %}
+        </div>
     </div>
 </div>
-
-{% if album.description %}
-<div class="album-about">
-    <p class="album-desc" id="albumDesc">{{ album.description }}</p>
-    <button class="desc-toggle" id="descToggle" type="button" hidden>Read more</button>
-</div>
-{% endif %}
 
 {% if media_counts.all %}
 <div class="tabs">
@@ -53,6 +64,12 @@
 </div>
 
 {% if media_page.object_list %}
+<div class="ledger-header">
+    <span class="col-label">#</span>
+    <span class="col-label"></span>
+    <span class="col-label">Title</span>
+    <span class="col-label col-right col-duration">Duration</span>
+</div>
 <div class="ledger">
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
@@ -64,7 +81,7 @@
             <div class="placeholder-thumb">{{ item.title|slice:":1"|upper }}</div>
             {% endif %}
             <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
             </div>
         </div>
         <div class="row-main">
@@ -85,6 +102,7 @@
     <p>No items of this type in this album yet.</p>
 </div>
 {% endif %}
+
 {% else %}
 <div class="empty-state">
     <div class="glyph">Nothing filed here</div>

@@ -2,7 +2,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 PAGE_SIZE_ALBUMS = 12
 PAGE_SIZE_MEDIA = 20
-PAGE_SIZE_RESUME = 5
+PAGE_SIZE_RESUME = 20
 PAGE_SIZE_HISTORY = 20
 
 

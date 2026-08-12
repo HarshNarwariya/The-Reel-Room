@@ -4,57 +4,60 @@
 {% block title %}My List — Hyakutake{% endblock %}
 
 {% block content %}
-<div class="topbar" style="margin-bottom:32px;">
-    <div class="eyebrow">Watch History</div>
-    <h1 class="wordmark" style="font-size:clamp(32px,5vw,48px);">My <em>List</em></h1>
-    <p class="tagline">Everything you've started, paused, or finished — stamped and ready to pick back up.</p>
+
+<div class="browse-header">
+    <div class="browse-header-text">
+        <div class="eyebrow">Watch History</div>
+        <h1 class="wordmark" style="font-size:clamp(28px,4vw,44px);margin-bottom:6px;">My <em>List</em></h1>
+        <p class="tagline" style="font-size:14px;">Everything you've started, paused, or finished — stamped and ready to pick back up.</p>
+    </div>
     {% if history_page.paginator.count %}
-    <div class="shelf-stat">
-        <div class="num mono">{{ history_page.paginator.count|stringformat:"02d" }}</div>
-        <div class="label">Items logged</div>
+    <div class="browse-total-badge">
+        <span class="browse-total-num mono">{{ history_page.paginator.count }}</span>
+        <span class="browse-total-label">items logged</span>
     </div>
     {% endif %}
 </div>
 
 {% if history_page.object_list %}
-<div class="ledger">
+<div class="media-grid">
     {% for record in history_page %}
-    <a href="{% url 'player' record.media.id %}" class="ledger-row" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
-        <div class="row-index mono">{{ forloop.counter|page_row_index:history_page|stringformat:"03d" }}</div>
-        <div class="row-thumb">
+    <a href="{% url 'player' record.media.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+        <div class="media-card-art">
             {% if record.media.thumbnail_url %}
             <img src="{{ record.media.thumbnail_url }}" alt="{{ record.media.title }}" loading="lazy">
             {% else %}
             <div class="placeholder-thumb">{{ record.media.title|slice:":1"|upper }}</div>
             {% endif %}
-            <div class="play-glyph">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#ece6d6"/></svg>
+            <div class="media-card-overlay">
+                <div class="media-card-play-ring">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="white"/></svg>
+                </div>
             </div>
-        </div>
-        <div class="row-main">
-            <div class="row-title-line">
-                <span class="row-title">{{ record.media.title }}</span>
+            <div class="media-card-top">
                 {% if record.completed %}
                 <span class="stamp stamp-complete">done</span>
                 {% else %}
                 <span class="stamp {{ record.media.media_type|type_stamp_class }}">{{ record.media.media_type|type_label }}</span>
                 {% endif %}
             </div>
-            <div class="row-sub">{{ record.media.album.title }} · {{ record.updated_at|timesince }} ago</div>
+            <div class="media-card-bottom">
+                <span class="media-card-duration mono">
+                    {% if record.completed %}complete
+                    {% elif record.media.duration_seconds %}{{ record.position_seconds|format_duration }}
+                    {% else %}{{ record.media|counter_label }}
+                    {% endif %}
+                </span>
+            </div>
             {% if not record.completed and record.media.duration_seconds %}
-            <div class="progress-bar-mini">
-                <div class="fill" style="width: {{ record|progress_percent }}%;"></div>
+            <div class="carousel-progress">
+                <div class="carousel-progress-fill" style="width:{{ record|progress_percent }}%;"></div>
             </div>
             {% endif %}
         </div>
-        <div class="counter">
-            {% if record.completed %}
-            complete
-            {% elif record.media.duration_seconds %}
-            {{ record.position_seconds|format_duration }}
-            {% else %}
-            {{ record.media|counter_label }}
-            {% endif %}
+        <div class="media-card-body">
+            <div class="media-card-title">{{ record.media.title }}</div>
+            <div class="media-card-album mono">{{ record.media.album.title }} · {{ record.updated_at|timesince }} ago</div>
         </div>
     </a>
     {% endfor %}
@@ -66,4 +69,5 @@
     <p>Your watch history is empty. Browse the <a href="{% url 'home' %}">shelf</a> to get started.</p>
 </div>
 {% endif %}
+
 {% endblock %}

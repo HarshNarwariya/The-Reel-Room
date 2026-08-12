@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load content_extras %}
+
+{% block title %}About — Hyakutake{% endblock %}
+
+{% block extra_head %}
+<style>
+@media (max-width: 640px) {
+    .about-two-col { grid-template-columns: 1fr !important; }
+    .about-personal-row { grid-template-columns: repeat(3,1fr) !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% comment %} Mosaic hero {% endcomment %}
+<div class="about-mosaic-hero">
+    <div class="about-mosaic-grid">
+        {% for album in spotlight_albums %}
+        <div class="about-mosaic-cell">
+            {% if album.thumbnail_url %}
+            <img src="{{ album.thumbnail_url }}" alt="" aria-hidden="true" loading="lazy">
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="about-mosaic-cell" style="background:linear-gradient(160deg,var(--surface-2),var(--surface-3));"></div>
+        <div class="about-mosaic-cell" style="background:linear-gradient(160deg,var(--surface-3),var(--surface-2));"></div>
+        <div class="about-mosaic-cell" style="background:var(--surface-2);"></div>
+        <div class="about-mosaic-cell" style="background:var(--surface-3);"></div>
+        <div class="about-mosaic-cell" style="background:linear-gradient(160deg,var(--surface-2),var(--surface-3));"></div>
+        <div class="about-mosaic-cell" style="background:var(--surface-2);"></div>
+        {% endfor %}
+    </div>
+    <div class="about-mosaic-overlay">
+        <div class="about-mosaic-text">
+            <div class="brand">Hyaku<em>take</em></div>
+            <p class="tagline">A personal media archive &mdash; every album, episode, and entry carefully logged and always ready to pick back up.</p>
+        </div>
+    </div>
+</div>
+
+{% comment %} Stats wall {% endcomment %}
+<div class="about-stats-wall">
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ album_total|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Collections</div>
+    </div>
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ media_counts.total|default:"00"|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Total Items</div>
+    </div>
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ media_counts.video|default:"00"|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Videos</div>
+    </div>
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ media_counts.audio|default:"00"|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Audio Tracks</div>
+    </div>
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ media_counts.image|default:"00"|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Images</div>
+    </div>
+    <div class="about-stat">
+        <div class="about-stat-num mono">{{ media_counts.text|default:"00"|stringformat:"02d" }}</div>
+        <div class="about-stat-label">Text Entries</div>
+    </div>
+</div>
+
+{% comment %} Two-column: personal progress + format breakdown {% endcomment %}
+<div class="about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:48px;">
+
+    <div class="about-section" style="margin-bottom:0;">
+        <h2 class="about-section-title">Your <em>Progress</em></h2>
+        <div class="about-personal-row">
+            <div class="about-personal-card">
+                <div class="about-personal-num mono">{{ user_stats.watched|stringformat:"02d" }}</div>
+                <div class="about-personal-label">Items logged</div>
+            </div>
+            <div class="about-personal-card">
+                <div class="about-personal-num mono">{{ user_stats.completed|stringformat:"02d" }}</div>
+                <div class="about-personal-label">Completed</div>
+            </div>
+            <div class="about-personal-card">
+                <div class="about-personal-num mono">{{ user_stats.in_progress|stringformat:"02d" }}</div>
+                <div class="about-personal-label">In progress</div>
+            </div>
+        </div>
+        <div style="margin-top:16px;padding:16px 18px;background:var(--surface);border:1px solid var(--border-light);border-radius:var(--r-md);box-shadow:var(--shadow-xs);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;color:var(--text-1);">Completion rate</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;">
+                    {% if user_stats.watched %}{% widthratio user_stats.completed user_stats.watched 100 %}%{% else %}&mdash;{% endif %}
+                </span>
+            </div>
+            <div class="format-bar-wrap" style="height:8px;border-radius:99px;">
+                <span class="format-bar" style="width:{% if user_stats.watched %}{% widthratio user_stats.completed user_stats.watched 100 %}{% else %}0{% endif %}%;border-radius:99px;"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section" style="margin-bottom:0;">
+        <h2 class="about-section-title">By <em>Format</em></h2>
+        <div class="about-format-grid">
+            <div class="about-format-item">
+                <div class="about-format-icon"><span class="stamp stamp-video">VID</span></div>
+                <div class="about-format-body">
+                    <div class="about-format-name">Video <span class="count">{{ media_counts.video }}</span></div>
+                    <div class="about-format-bar">
+                        <div class="about-format-bar-fill about-format-bar-fill--video" style="width:{% if media_counts.total %}{% widthratio media_counts.video media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-format-item">
+                <div class="about-format-icon"><span class="stamp stamp-audio">AUD</span></div>
+                <div class="about-format-body">
+                    <div class="about-format-name">Audio <span class="count">{{ media_counts.audio }}</span></div>
+                    <div class="about-format-bar">
+                        <div class="about-format-bar-fill about-format-bar-fill--audio" style="width:{% if media_counts.total %}{% widthratio media_counts.audio media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-format-item">
+                <div class="about-format-icon"><span class="stamp stamp-image">IMG</span></div>
+                <div class="about-format-body">
+                    <div class="about-format-name">Image <span class="count">{{ media_counts.image }}</span></div>
+                    <div class="about-format-bar">
+                        <div class="about-format-bar-fill about-format-bar-fill--image" style="width:{% if media_counts.total %}{% widthratio media_counts.image media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-format-item">
+                <div class="about-format-icon"><span class="stamp stamp-text">TXT</span></div>
+                <div class="about-format-body">
+                    <div class="about-format-name">Text <span class="count">{{ media_counts.text }}</span></div>
+                    <div class="about-format-bar">
+                        <div class="about-format-bar-fill about-format-bar-fill--text" style="width:{% if media_counts.total %}{% widthratio media_counts.text media_counts.total 100 %}{% else %}0{% endif %}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% comment %} All collections carousel {% endcomment %}
+{% if all_albums %}
+<section class="about-section">
+    <h2 class="about-section-title">All <em>Collections</em></h2>
+    <section class="carousel-section" style="margin-bottom:0;" data-carousel>
+        <div class="carousel-header">
+            <span class="catalog-count mono"><strong>{{ album_total }}</strong> album{{ album_total|pluralize }}</span>
+            <div class="carousel-nav-btns">
+                <button class="carousel-btn" data-carousel-prev aria-label="Scroll left">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button class="carousel-btn" data-carousel-next aria-label="Scroll right">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="carousel-track-wrap">
+            <div class="carousel-track" data-carousel-track>
+                {% for album in all_albums %}
+                <a href="{% url 'album-detail' album.id %}" class="carousel-card carousel-card--album" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
+                    <div class="carousel-art">
+                        {% if album.thumbnail_url %}
+                        <img src="{{ album.thumbnail_url }}" alt="{{ album.title }}" loading="lazy">
+                        {% else %}
+                        <div class="placeholder-thumb">{{ album.title|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <div class="carousel-play-overlay"></div>
+                        <div class="carousel-art-badge">
+                            <span class="corner-tag">{{ album.media_items.count }}</span>
+                        </div>
+                    </div>
+                    <div class="carousel-info">
+                        <div class="carousel-card-title">{{ album.title }}</div>
+                        {% if album.description %}
+                        <div class="carousel-card-sub">{{ album.description|truncatechars:44 }}</div>
+                        {% else %}
+                        <div class="carousel-card-sub">{{ album.media_items.count }} item{{ album.media_items.count|pluralize }}</div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% if album_total > 24 %}
+    <div style="text-align:center;margin-top:22px;">
+        <a href="{% url 'archive' %}" class="btn-nav" style="display:inline-flex;">
+            View all {{ album_total }} collections &rarr;
+        </a>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<div style="text-align:center;padding:40px 20px 0;border-top:1px solid var(--border-light);">
+    <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-0.02em;color:var(--text-1);margin-bottom:8px;">
+        Hyaku<em style="font-style:italic;color:var(--accent);font-weight:450;">take</em>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3);">
+        Personal Media Archive &middot; Private Collection
+    </div>
+</div>
+
+{% endblock %}

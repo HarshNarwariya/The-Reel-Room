@@ -1,36 +1,150 @@
-{% extends "base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — Hyakutake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: var(--bg);
+        }
 
-{% block title %}Sign In — Hyakutake{% endblock %}
-{% block container_class %} auth-container{% endblock %}
+        /* Decorative dots pattern in background */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.6;
+            z-index: 0;
+        }
 
-{% block content %}
-<div class="auth-card">
-    <h1 class="auth-wordmark">Hyaku<em>take</em></h1>
-    <p class="auth-sub">Sign in to access the archive</p>
+        .login-wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 400px;
+            animation: riseIn 0.5s var(--ease) both;
+        }
 
-    <form method="post" class="auth-form">
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-        <div class="form-error">{{ form.non_field_errors }}</div>
-        {% endif %}
+        .login-brand-block {
+            text-align: center;
+            margin-bottom: 28px;
+        }
 
-        <div class="form-group">
-            <label for="id_username">Email or Username</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-            <span class="field-error">{{ form.username.errors.0 }}</span>
-            {% endif %}
+        .login-brand-block .brand-name {
+            font-family: 'Fraunces', serif;
+            font-weight: 600;
+            font-size: 46px;
+            letter-spacing: -0.025em;
+            color: var(--text-1);
+            line-height: 1;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .login-brand-block .brand-name em {
+            font-style: italic;
+            font-weight: 450;
+            color: var(--accent);
+        }
+
+        .login-brand-block .brand-tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--r-lg);
+            padding: 32px 32px 28px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .login-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-1);
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-3);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .login-footer span {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="login-wrap">
+        <div class="login-brand-block">
+            <span class="brand-name">Hyaku<em>take</em></span>
+            <p class="brand-tagline">Personal Media Archive</p>
         </div>
 
-        <div class="form-group">
-            <label for="id_password">Password</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-            <span class="field-error">{{ form.password.errors.0 }}</span>
-            {% endif %}
+        <div class="login-card">
+            <p class="login-card-title">Sign in to access the archive</p>
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <span class="field-error">{{ form.username.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <span class="field-error">{{ form.password.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In →</button>
+            </form>
         </div>
 
-        <button type="submit" class="btn-primary">Sign In</button>
-    </form>
-</div>
-{% endblock %}
+        <p class="login-footer">Private archive · <span>Authorised access only</span></p>
+    </div>
+</body>
+</html>
