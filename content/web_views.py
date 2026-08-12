@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 import json
 
 from .models import Album, Media, PlaybackHistory
+from .utils import media_text_body
 from .pagination import (
     PAGE_SIZE_ALBUMS,
     PAGE_SIZE_HISTORY,
@@ -118,6 +119,7 @@ def player(request, pk):
         resume_seconds = int(history.position_seconds)
     episode_index = index + 1 if index >= 0 else 1
     episode_total = len(siblings)
+    text_body = media_text_body(media) if media.media_type == Media.MediaType.TEXT else ""
     return render(
         request,
         "content/player.html",
@@ -130,6 +132,7 @@ def player(request, pk):
             "episode_index": episode_index,
             "episode_total": episode_total,
             "sibling_ids_json": json.dumps(siblings),
+            "text_body": text_body,
         },
     )
 

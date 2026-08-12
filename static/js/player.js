@@ -16,7 +16,7 @@
     var resumeSeconds = resumePrompt
         ? parseFloat(resumePrompt.dataset.resumeSeconds) || 0
         : 0;
-    var vinyl = document.getElementById("vinylDisc");
+    var audioWrap = document.querySelector(".media-player-audio-wrap");
     var plyrInstance = null;
     var autoplayAttempted = false;
     var advancing = false;
@@ -88,9 +88,9 @@
         return "/play/" + id + "/";
     }
 
-    function syncVinyl(playing) {
-        if (!vinyl) return;
-        vinyl.classList.toggle("spinning", playing);
+    function syncAudioArt(playing) {
+        if (!audioWrap) return;
+        audioWrap.classList.toggle("is-playing", playing);
     }
 
     function tryAutoplay() {
@@ -188,13 +188,13 @@
 
     function positionResumePrompt() {
         if (!resumePrompt) return;
-        var host = resumePrompt.closest(".media-player-stage, .media-player--audio");
+        var host = resumePrompt.closest(".media-player-stage, .media-player-audio-stage");
         if (!host) return;
 
         var controls = host.querySelector(".plyr__controls");
         var gap = 12;
         if (!controls) {
-            resumePrompt.style.bottom = "54px";
+            resumePrompt.style.bottom = "12px";
             return;
         }
 
@@ -370,16 +370,16 @@
         function onEnded() {
             var duration = plyrInstance ? plyrInstance.duration : media.duration;
             saveProgress(duration || 0, true);
-            syncVinyl(false);
+            syncAudioArt(false);
             navigateToNext();
         }
 
         function onPlay() {
-            syncVinyl(true);
+            syncAudioArt(true);
         }
 
         function onPause() {
-            syncVinyl(false);
+            syncAudioArt(false);
         }
 
         if (plyrInstance) {

@@ -88,27 +88,22 @@
         </div>
 
         {% elif media.media_type == "audio" %}
-        <div class="player-audio-panel">
-            <div class="vinyl-wrap">
-                <div class="vinyl" id="vinylDisc"></div>
-                <div class="media-loader media-loader--audio is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
+        <div class="media-player-audio-wrap">
+            <div class="media-player-audio-stage">
+                <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
                     <div class="media-loader-ring" aria-hidden="true"></div>
                     <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
-            </div>
-            <div class="audio-title">{{ media.title }}</div>
-            <div class="audio-sub">
-                {{ media.album.title }}
-                <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
-            </div>
-            <div class="media-player media-player--audio">
-                <audio id="media-element">
-                    {% if media.file_url %}
-                    <source src="{{ media.file_url }}" type="audio/mpeg">
-                    {% endif %}
-                </audio>
+                {% if media.thumbnail_url %}
+                <img src="{{ media.thumbnail_url }}" alt="{{ media.title }}" class="media-player-audio-art">
+                {% else %}
+                <div class="media-player-audio-placeholder">{{ media.title|slice:":1"|upper }}</div>
+                {% endif %}
+                <div class="media-player-audio-badge">
+                    <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+                </div>
                 {% if resume_seconds %}
-                <div class="resume-prompt resume-prompt--overlay resume-prompt--audio" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
+                <div class="resume-prompt resume-prompt--overlay" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
                     <div class="resume-prompt-inner">
                         <span class="resume-prompt-text">Resume from <strong class="mono">{{ resume_seconds|format_duration }}</strong>?</span>
                         <div class="resume-prompt-actions">
@@ -121,10 +116,27 @@
                 </div>
                 {% endif %}
             </div>
-            {% if media.duration_seconds %}
-            <div class="counter" style="display:inline-block;margin-top:14px;">{{ media.duration_seconds|format_duration }}</div>
-            {% endif %}
-            <div class="playback-options" id="playbackOptions" style="margin-top:20px;text-align:left;">
+            <div class="media-player media-player--audio">
+                <audio id="media-element">
+                    {% if media.file_url %}
+                    <source src="{{ media.file_url }}" type="audio/mpeg">
+                    {% endif %}
+                </audio>
+            </div>
+        </div>
+
+        <div class="player-meta-card">
+            <div class="player-meta-title-row">
+                <div>
+                    <div class="player-meta-badges">
+                        <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+                        <span class="row-sub mono">{{ media.album.title }}</span>
+                    </div>
+                    <div class="player-meta-title" style="margin-top:8px;">{{ media.title }}</div>
+                </div>
+                <div class="counter">{% if media.duration_seconds %}{{ media.duration_seconds|format_duration }}{% else %}&mdash;:&mdash;{% endif %}</div>
+            </div>
+            <div class="playback-options" id="playbackOptions" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
                 <div class="playback-options-label mono">Playback</div>
                 <label class="playback-toggle">
                     <input type="checkbox" id="autoplayToggle" checked>
@@ -139,13 +151,15 @@
 
         {% elif media.media_type == "image" %}
         <div class="player-image-frame">
-            {% if media.file_url %}
-            <img src="{{ media.file_url }}" alt="{{ media.title }}" loading="lazy">
-            {% else %}
-            <div class="empty-state" style="border:none;">
-                <p>No image file configured.</p>
+            <div class="player-image-stage">
+                {% if media.file_url %}
+                <img src="{{ media.file_url }}" alt="{{ media.title }}" loading="lazy">
+                {% else %}
+                <div class="player-image-empty">
+                    <p>No image file configured.</p>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
             <div class="placard">
                 <div>
                     <div class="meta-stamp-row">
@@ -159,14 +173,25 @@
         </div>
 
         {% elif media.media_type == "text" %}
-        <div class="player-text-panel">
-            <div class="meta-stamp-row" style="margin-bottom:18px;">
-                <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
-                <span class="row-sub mono">{{ media.album.title }}</span>
+        <div class="player-text-frame">
+            <div class="player-text-stage">
+                {% if text_body %}
+                <div class="player-text-content">{{ text_body|linebreaks }}</div>
+                {% else %}
+                <div class="player-text-empty">
+                    <p>No text content available.</p>
+                </div>
+                {% endif %}
             </div>
-            <div class="modal-title" style="margin-bottom:24px;">{{ media.title }}</div>
-            <div class="player-text-content">
-                {{ media.text_content|linebreaks }}
+            <div class="placard">
+                <div>
+                    <div class="meta-stamp-row">
+                        <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
+                        <span class="row-sub mono">{{ media.album.title }}</span>
+                    </div>
+                    <div class="modal-title" style="font-size:19px;">{{ media.title }}</div>
+                </div>
+                <div class="counter mono">text entry</div>
             </div>
         </div>
         {% endif %}

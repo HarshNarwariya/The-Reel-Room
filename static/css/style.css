@@ -937,75 +937,6 @@ a.tab-stub {
     border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Audio panel */
-.player-audio-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 40px 32px 32px;
-    box-shadow: var(--shadow-md);
-    text-align: center;
-    position: relative;
-}
-
-.vinyl-wrap {
-    width: 180px;
-    height: 180px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.vinyl {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at center, var(--accent) 0 8px, #0c0b09 9px 11px, transparent 11px),
-        repeating-radial-gradient(circle at center, #17140f 0 3px, #201b14 3px 6px);
-    border: 1px solid var(--border);
-    box-shadow: 0 8px 28px rgba(28,25,20,0.18);
-    animation: spin 6s linear infinite;
-    animation-play-state: paused;
-}
-
-.vinyl.spinning {
-    animation-play-state: running;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .vinyl { animation: none; }
-}
-
-.audio-title {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text-1);
-    margin-bottom: 5px;
-    letter-spacing: -0.01em;
-}
-
-.audio-sub {
-    color: var(--text-3);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.player-audio-panel audio {
-    width: 100%;
-    margin-bottom: 12px;
-}
-
 /* Image frame */
 .player-image-frame {
     position: relative;
@@ -1016,13 +947,36 @@ a.tab-stub {
     box-shadow: var(--shadow-md);
 }
 
-.player-image-frame img {
+.player-image-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    max-height: 70vh;
-    object-fit: contain;
-    background: #0c0b09;
+    max-width: min(100%, 640px);
+    max-height: min(72vh, 820px);
+    aspect-ratio: var(--thumb-ratio);
     margin: 0 auto;
+    overflow: hidden;
+    background: linear-gradient(160deg, #0c0b09 0%, #17140f 100%);
+}
+
+.player-image-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
     display: block;
+}
+
+.player-image-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    color: var(--text-3);
+    font-size: 14px;
 }
 
 .placard {
@@ -1036,25 +990,52 @@ a.tab-stub {
     background: var(--surface);
 }
 
-/* Text panel */
-.player-text-panel {
-    background: var(--surface);
+/* Text frame */
+.player-text-frame {
+    position: relative;
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
-    padding: 36px 42px;
+    overflow: hidden;
+    background: var(--surface);
     box-shadow: var(--shadow-md);
-    max-width: 780px;
+}
+
+.player-text-stage {
+    width: 100%;
+    max-width: min(100%, 780px);
+    max-height: min(72vh, 820px);
     margin: 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 32px 36px;
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
 }
 
 .player-text-content {
-    font-size: 1.05rem;
+    font-size: 1rem;
     line-height: 1.85;
     color: var(--text-2);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .player-text-content p {
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.player-text-content p:last-child {
+    margin-bottom: 0;
+}
+
+.player-text-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    color: var(--text-3);
+    font-size: 14px;
+    text-align: center;
 }
 
 /* Player meta */
@@ -1703,8 +1684,18 @@ a.tab-stub {
         bottom: 16px;
     }
 
-    .player-text-panel {
+    .player-text-stage {
+        max-height: min(56vh, 560px);
         padding: 24px 18px;
+    }
+
+    .player-image-stage {
+        max-height: min(56vh, 560px);
+        max-width: min(100%, 320px);
+    }
+
+    .placard {
+        padding: 14px 16px;
     }
 
     .auth-card {
