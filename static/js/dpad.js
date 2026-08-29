@@ -25,6 +25,7 @@
 
     var active = false;
     var tvMode = false;
+    var lastNonInputFocus = null;
 
     function detectTV() {
         var ua = navigator.userAgent || "";
@@ -243,6 +244,72 @@
         if (target) setFocus(target);
     }
 
+    function isTextInput(el) {
+        if (!el || el.tagName !== "INPUT") return false;
+        var type = (el.type || "text").toLowerCase();
+        return type === "text" || type === "search" || type === "url" || type === "email" || type === "tel" || type === "password" || type === "number";
+    }
+
+    function canExitInputHorizontally(input, direction) {
+        if (!isTextInput(input)) return true;
+        var start = input.selectionStart;
+        var end = input.selectionEnd;
+        var len = input.value.length;
+        if (direction === "left") return start === 0 && end === 0;
+        if (direction === "right") return start === len && end === len;
+        return false;
+    }
+
+    function exitInput(input, direction) {
+        var next =
+            (direction && findNext(input, direction)) ||
+            findNext(input, "down") ||
+            findNext(input, "up") ||
+            findNext(input, "right") ||
+            findNext(input, "left");
+
+        if (!next || next === input) {
+            next =
+                (lastNonInputFocus && lastNonInputFocus !== input && isFocusable(lastNonInputFocus)
+                    ? lastNonInputFocus
+                    : null) || getInitialFocusTarget();
+        }
+
+        input.blur();
+        if (next && next !== input) setFocus(next);
+    }
+
+    function handleInputKeyDown(e, action) {
+        var input = document.activeElement;
+        if (!isEditable(input)) return false;
+
+        if (action === "back") {
+            e.preventDefault();
+            exitInput(input);
+            return true;
+        }
+
+        if (action === "down" || action === "up") {
+            e.preventDefault();
+            exitInput(input, action);
+            return true;
+        }
+
+        if (action === "left" || action === "right") {
+            if (canExitInputHorizontally(input, action)) {
+                var next = findNext(input, action);
+                if (next) {
+                    e.preventDefault();
+                    exitInput(input, action);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return false;
+    }
+
     function shouldIgnoreKeyEvent(e) {
         if (e.altKey || e.ctrlKey || e.metaKey) return true;
         if (isEditable(document.activeElement)) return true;
@@ -306,6 +373,12 @@
         }
 
         if (!active && !tvMode) return;
+
+        if (isEditable(document.activeElement)) {
+            if (handleInputKeyDown(e, action)) return;
+            return;
+        }
+
         if (shouldIgnoreKeyEvent(e)) return;
 
         if (action === "back") {
@@ -335,8 +408,11 @@
     }
 
     function onFocusIn(e) {
-        if (!active && !tvMode) return;
         var el = e.target;
+        if (isFocusable(el) && !isEditable(el)) {
+            lastNonInputFocus = el;
+        }
+        if (!active && !tvMode) return;
         if (!isFocusable(el)) return;
         scrollIntoViewSoft(el);
     }
