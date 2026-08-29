@@ -63,7 +63,7 @@ class MediaNavigationView(APIView):
 
         return Response(
             {
-                "media": MediaSerializer(media).data,
+                "media": MediaSerializer(media, context={"request": request}).data,
                 "prev_id": prev_id,
                 "next_id": next_id,
                 "position_seconds": history.position_seconds if history else 0,
@@ -100,7 +100,9 @@ class PlaybackUpdateView(APIView):
                 "completed": serializer.validated_data["completed"],
             },
         )
-        return Response(PlaybackHistorySerializer(history).data)
+        return Response(
+            PlaybackHistorySerializer(history, context={"request": request}).data
+        )
 
 
 class ResumePlaybackView(APIView):
@@ -116,4 +118,6 @@ class ResumePlaybackView(APIView):
         if not history:
             return Response({"detail": "Nothing to resume."}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(PlaybackHistorySerializer(history).data)
+        return Response(
+            PlaybackHistorySerializer(history, context={"request": request}).data
+        )

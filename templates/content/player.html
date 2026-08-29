@@ -5,8 +5,7 @@
 {% block container_class %} player-container-full{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="/static/vendor/plyr/plyr.min.css">
-<link rel="stylesheet" href="/static/css/plyr-theme.css">
+<link rel="stylesheet" href="/static/css/tv-player.css">
 {% endblock %}
 
 {% block content %}
@@ -26,6 +25,7 @@
     </div>
 
     <div id="player-container"
+         data-dpad-player
          data-media-id="{{ media.id }}"
          data-media-type="{{ media.media_type }}"
          data-update-url="/api/history/update/"
@@ -69,13 +69,15 @@
 
         {% elif media.media_type == "video" %}
         <div class="media-player media-player--video">
-            <div class="media-player-stage">
+            <div class="media-player-stage" data-dpad-player-stage data-player-type="video">
                 <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
                     <div class="media-loader-ring" aria-hidden="true"></div>
                     <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
                 </div>
-                <video id="media-element" playsinline
-                       {% if media_thumbnail_url %}data-poster="{{ media_thumbnail_url }}"{% endif %}>
+                {% include "partials/tv_player_chrome.html" %}
+                <video id="media-element" playsinline tabindex="-1"
+                       {% if media_thumbnail_url %}data-poster="{{ media_thumbnail_url }}"{% endif %}
+                       {% if media_thumbnail_url %}poster="{{ media_thumbnail_url }}"{% endif %}>
                     {% if media.file_url %}
                     <source src="{{ media.file_url }}" type="video/mp4">
                     {% endif %}
@@ -84,7 +86,7 @@
                 <div class="resume-prompt resume-prompt--overlay" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
                     <div class="resume-prompt-inner">
                         <span class="resume-prompt-text">Resume from <strong class="mono">{{ resume_seconds|format_duration }}</strong>?</span>
-                        <div class="resume-prompt-actions">
+                        <div class="resume-prompt-actions" data-dpad-row>
                             <button type="button" class="resume-btn resume-btn--primary" id="resumeContinue">Resume</button>
                             <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
                         </div>
@@ -108,13 +110,13 @@
                 </div>
                 <div class="counter">{% if media.duration_seconds %}{{ media.duration_seconds|format_duration }}{% else %}&mdash;:&mdash;{% endif %}</div>
             </div>
-            <div class="playback-options" id="playbackOptions" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
+            <div class="playback-options" id="playbackOptions" data-dpad-zone="playback-options" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
                 <div class="playback-options-label mono">Playback</div>
                 <label class="playback-toggle">
                     <input type="checkbox" id="autoplayToggle" checked>
                     <span>Autoplay next</span>
                 </label>
-                <div class="playback-mode" id="autoplayModeGroup">
+                <div class="playback-mode" id="autoplayModeGroup" data-dpad-row>
                     <button type="button" class="mode-stub active" data-mode="order">In order</button>
                     <button type="button" class="mode-stub" data-mode="random">Random</button>
                 </div>
@@ -123,7 +125,7 @@
 
         {% elif media.media_type == "audio" %}
         <div class="media-player-audio-wrap">
-            <div class="media-player-audio-stage">
+            <div class="media-player-audio-stage" data-dpad-player-stage data-player-type="audio">
                 <div class="media-loader is-active" id="mediaLoader" aria-live="polite" aria-hidden="false">
                     <div class="media-loader-ring" aria-hidden="true"></div>
                     <span class="media-loader-label mono" id="mediaLoaderLabel">Loading&hellip;</span>
@@ -136,11 +138,17 @@
                 <div class="media-player-audio-badge">
                     <span class="stamp {{ media.media_type|type_stamp_class }}">{{ media.media_type|type_label }}</span>
                 </div>
+                {% include "partials/tv_player_chrome.html" %}
+                <audio id="media-element" class="tv-player-media-hidden" tabindex="-1">
+                    {% if media.file_url %}
+                    <source src="{{ media.file_url }}" type="audio/mpeg">
+                    {% endif %}
+                </audio>
                 {% if resume_seconds %}
                 <div class="resume-prompt resume-prompt--overlay" id="resumePrompt" data-resume-seconds="{{ resume_seconds }}">
                     <div class="resume-prompt-inner">
                         <span class="resume-prompt-text">Resume from <strong class="mono">{{ resume_seconds|format_duration }}</strong>?</span>
-                        <div class="resume-prompt-actions">
+                        <div class="resume-prompt-actions" data-dpad-row>
                             <button type="button" class="resume-btn resume-btn--primary" id="resumeContinue">Resume</button>
                             <button type="button" class="resume-btn" id="resumeStartOver">Start over</button>
                         </div>
@@ -149,13 +157,6 @@
                     <div class="resume-prompt-countdown" aria-hidden="true"></div>
                 </div>
                 {% endif %}
-            </div>
-            <div class="media-player media-player--audio">
-                <audio id="media-element">
-                    {% if media.file_url %}
-                    <source src="{{ media.file_url }}" type="audio/mpeg">
-                    {% endif %}
-                </audio>
             </div>
         </div>
 
@@ -170,13 +171,13 @@
                 </div>
                 <div class="counter">{% if media.duration_seconds %}{{ media.duration_seconds|format_duration }}{% else %}&mdash;:&mdash;{% endif %}</div>
             </div>
-            <div class="playback-options" id="playbackOptions" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
+            <div class="playback-options" id="playbackOptions" data-dpad-zone="playback-options" style="margin-top:0;border:none;padding:12px 0 0;background:transparent;box-shadow:none;border-top:1px solid var(--border-light);">
                 <div class="playback-options-label mono">Playback</div>
                 <label class="playback-toggle">
                     <input type="checkbox" id="autoplayToggle" checked>
                     <span>Autoplay next</span>
                 </label>
-                <div class="playback-mode" id="autoplayModeGroup">
+                <div class="playback-mode" id="autoplayModeGroup" data-dpad-row>
                     <button type="button" class="mode-stub active" data-mode="order">In order</button>
                     <button type="button" class="mode-stub" data-mode="random">Random</button>
                 </div>
@@ -266,6 +267,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/vendor/plyr/plyr.min.js"></script>
 <script src="/static/js/player.js"></script>
 {% endblock %}

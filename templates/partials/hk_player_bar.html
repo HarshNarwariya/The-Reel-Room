@@ -1,0 +1,26 @@
+<div class="hk-player-bar" id="hkPlayerBar" data-dpad-row aria-label="Playback bar">
+    <button type="button" class="hk-player-btn" data-hk-action="seek-back" aria-label="Rewind 10 seconds">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 18V6l-8.5 6 8.5 6z" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="hk-player-btn hk-player-btn--primary" data-hk-action="play" aria-label="Play pause">
+        <svg class="hk-icon-play" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
+        <svg class="hk-icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="none" hidden><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="hk-player-btn" data-hk-action="seek-forward" aria-label="Forward 10 seconds">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 18l8.5-6L4 6v12z" fill="currentColor"/></svg>
+    </button>
+    <div class="hk-player-progress-wrap" aria-hidden="true">
+        <div class="hk-player-progress-track">
+            <div class="hk-player-progress-buffer" id="hkProgressBuffer"></div>
+            <div class="hk-player-progress-fill" id="hkProgressFill"></div>
+        </div>
+    </div>
+    <div class="hk-player-times mono">
+        <span id="hkTimeCurrent">0:00</span><span class="hk-player-time-sep">/</span><span id="hkTimeDuration">0:00</span>
+    </div>
+    {% if show_fullscreen %}
+    <button type="button" class="hk-player-btn" data-hk-action="fullscreen" id="hkFullscreenBtn" aria-label="Fullscreen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+    </button>
+    {% endif %}
+</div>

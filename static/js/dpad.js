@@ -193,6 +193,9 @@
             ".playback-mode",
             ".search-hero",
             ".settings-actions",
+            ".resume-prompt-actions",
+            ".playback-options",
+            ".tv-player-bar",
         ];
 
         for (var i = 0; i < rowSelectors.length; i++) {
@@ -476,6 +479,9 @@
     }
 
     function getInitialFocusTarget() {
+        var playBtn = document.getElementById("playerPlayBtn");
+        if (playBtn && isFocusable(playBtn)) return playBtn;
+
         var heroPrimary = document.querySelector(".hero-btn-primary");
         if (heroPrimary && isFocusable(heroPrimary)) return heroPrimary;
 
@@ -566,23 +572,219 @@
         return false;
     }
 
-    function shouldIgnoreKeyEvent(e) {
-        if (e.altKey || e.ctrlKey || e.metaKey) return true;
-        if (isEditable(document.activeElement)) return true;
+    function getPlayerContainer() {
+        return document.querySelector("[data-dpad-player]");
+    }
 
-        var player = document.getElementById("player-container");
-        if (player) {
+    function getPlayerApi() {
+        return window.hyakutakePlayer || null;
+    }
+
+    function isResumePromptVisible() {
+        var prompt = document.getElementById("resumePrompt");
+        return !!(prompt && prompt.classList.contains("is-visible"));
+    }
+
+    function isInPlayerUiControls(el) {
+        if (!el) return false;
+        return !!(
+            el.closest(".tv-player-bar") ||
+            el.closest(".playback-options") ||
+            el.closest(".player-nav-row") ||
+            el.closest(".resume-prompt") ||
+            el.closest(".player-context-bar")
+        );
+    }
+
+    function isInPlayerChrome(el) {
+        if (!el) return false;
+        return !!(
+            el.closest(".playback-options") ||
+            el.closest(".player-nav-row") ||
+            el.closest(".player-context-bar") ||
+            el.closest(".site-nav")
+        );
+    }
+
+    function arePlayerControlsVisible() {
+        var api = getPlayerApi();
+        return !!(api && api.areControlsVisible && api.areControlsVisible());
+    }
+
+    function isPlayerImmersive() {
+        if (!getPlayerContainer()) return false;
+        if (isResumePromptVisible()) return false;
+        var active = document.activeElement;
+        if (isInPlayerChrome(active)) return false;
+        if (active && active.closest(".tv-player-bar") && arePlayerControlsVisible()) return false;
+        return true;
+    }
+
+    var MEDIA_KEY_ACTION = {
+        85: "play_pause",
+        126: "play",
+        127: "pause",
+    };
+
+    function handlePlayerMediaKeys(e) {
+        if (!getPlayerContainer()) return false;
+        var mediaAction = MEDIA_KEY_ACTION[e.keyCode];
+        if (!mediaAction) return false;
+
+        var api = getPlayerApi();
+        if (!api) return false;
+
+        e.preventDefault();
+
+        if (mediaAction === "play_pause" || mediaAction === "play") {
+            api.togglePlay({ showControls: false });
+        } else if (mediaAction === "pause") {
+            var media = api.getMediaElement && api.getMediaElement();
+            if (media && !media.paused) api.togglePlay({ showControls: false });
+        }
+
+        return true;
+    }
+
+    function handleImmersiveTransport(e, action) {
+        if (!isPlayerImmersive()) return false;
+
+        var api = getPlayerApi();
+
+        if (action === "left" || action === "right" || action === "up") {
+            e.preventDefault();
+            focusPlayerControls();
+            return true;
+        }
+
+        if (action === "select") {
+            e.preventDefault();
+            if (api && api.togglePlay) api.togglePlay({ showControls: false });
+            return true;
+        }
+
+        if (action === "down") {
+            e.preventDefault();
+            focusPlaybackOptions();
+            return true;
+        }
+
+        return false;
+    }
+
+    function focusPlayerControls() {
+        var api = getPlayerApi();
+        if (api && api.showControls) api.showControls({ focusBar: false });
+        window.requestAnimationFrame(function () {
+            var target = api && api.focusBarControl ? api.focusBarControl() : null;
+            if (target && isFocusable(target)) setFocus(target);
+        });
+    }
+
+    function focusResumePrompt() {
+        var btn = document.getElementById("resumeContinue") || document.querySelector(".resume-prompt .resume-btn");
+        if (btn && isFocusable(btn)) setFocus(btn);
+    }
+
+    function focusPlaybackOptions() {
+        var toggle = document.getElementById("autoplayToggle");
+        if (toggle && isFocusable(toggle)) {
+            setFocus(toggle);
+            return;
+        }
+        var modeBtn = document.querySelector(".playback-mode .mode-stub");
+        if (modeBtn && isFocusable(modeBtn)) setFocus(modeBtn);
+    }
+
+    function handlePlayerKeyDown(e, action) {
+        if (!getPlayerContainer()) return false;
+
+        if (action === "back") {
+            var api = getPlayerApi();
+            if (api && api.isFullscreen && api.isFullscreen()) {
+                e.preventDefault();
+                api.exitFullscreen();
+                return true;
+            }
+            if (api && api.areControlsVisible && api.areControlsVisible()) {
+                if (api.hideControls && api.hideControls()) {
+                    e.preventDefault();
+                    return true;
+                }
+            }
+        }
+
+        if (isResumePromptVisible()) {
             var active = document.activeElement;
+            var inPrompt = active && active.closest(".resume-prompt");
             if (
-                active &&
-                (active.closest(".plyr") ||
-                    active.id === "media-element" ||
-                    active.closest(".plyr__controls"))
+                !inPrompt &&
+                (action === "select" || action === "down" || action === "up" || action === "left" || action === "right")
             ) {
+                e.preventDefault();
+                focusResumePrompt();
                 return true;
             }
         }
 
+        var activeEl = document.activeElement;
+        var inControls = activeEl && activeEl.closest(".tv-player-bar");
+        var inChrome = isInPlayerChrome(activeEl);
+
+        if (handleImmersiveTransport(e, action)) return true;
+
+        if (inChrome && action === "up") {
+            e.preventDefault();
+            focusPlayerControls();
+            return true;
+        }
+
+        if (inControls) {
+            if (action === "left" || action === "right") {
+                if (activeEl.id === "playerSeekForward" && action === "left") {
+                    e.preventDefault();
+                    setFocus(document.getElementById("playerSeekBack") || document.getElementById("playerPlayBtn"));
+                    return true;
+                }
+                if (activeEl.id === "playerSeekBack" && action === "right") {
+                    e.preventDefault();
+                    setFocus(document.getElementById("playerSeekForward"));
+                    return true;
+                }
+                if (activeEl.id === "playerSeekForward" && action === "right" && document.getElementById("playerFullscreenBtn")) {
+                    e.preventDefault();
+                    setFocus(document.getElementById("playerFullscreenBtn"));
+                    return true;
+                }
+                if (activeEl.id === "playerFullscreenBtn" && action === "left") {
+                    e.preventDefault();
+                    setFocus(document.getElementById("playerSeekForward"));
+                    return true;
+                }
+            }
+            if (action === "select") {
+                return false;
+            }
+            if (action === "up") {
+                e.preventDefault();
+                var nextUp = findNext(activeEl, "up");
+                if (nextUp) setFocus(nextUp);
+                return true;
+            }
+            if (action === "down") {
+                e.preventDefault();
+                focusPlaybackOptions();
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    }
+
+    function shouldIgnoreKeyEvent(e) {
+        if (e.altKey || e.ctrlKey || e.metaKey) return true;
+        if (isEditable(document.activeElement)) return true;
         return false;
     }
 
@@ -634,6 +836,10 @@
             if (handleInputKeyDown(e, action)) return;
             return;
         }
+
+        if (handlePlayerMediaKeys(e)) return;
+
+        if (handlePlayerKeyDown(e, action)) return;
 
         if (shouldIgnoreKeyEvent(e)) return;
 

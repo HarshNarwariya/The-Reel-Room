@@ -39,7 +39,7 @@ def build_drive_preview_url(file_id: str | None) -> str | None:
 
 
 def get_user_preview_mode(user) -> str:
-    if not user.is_authenticated:
+    if not user or not user.is_authenticated:
         return PREVIEW_MODE_PROXY
     profile = getattr(user, "profile", None)
     if profile:

@@ -4985,3 +4985,20 @@ body.tv-mode .carousel-card {
     scroll-margin: 20px;
 }
 
+body.dpad-active .tv-player-bar button,
+body.tv-mode .tv-player-bar button {
+    scroll-margin: 20px;
+}
+
+body.dpad-active .playback-toggle:focus-within,
+body.tv-mode .playback-toggle:focus-within {
+    box-shadow: var(--dpad-focus-shadow);
+    border-radius: var(--r-sm);
+}
+
+body.dpad-active .resume-btn:focus-visible,
+body.tv-mode .resume-btn:focus-visible {
+    box-shadow: var(--dpad-focus-shadow);
+    transform: scale(var(--dpad-focus-scale));
+}
+
