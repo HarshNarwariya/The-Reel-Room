@@ -20,7 +20,7 @@
 </div>
 
 {% if history_page.object_list %}
-<div class="media-grid">
+<div class="media-grid" data-dpad-grid>
     {% for record in history_page %}
     <a href="{% url 'player' record.media.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
         <div class="media-card-art">

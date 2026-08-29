@@ -186,7 +186,7 @@
     <span class="section-label">All Collections</span>
     <span class="catalog-count mono"><strong>{{ album_total }}</strong> album{{ album_total|pluralize }}</span>
 </div>
-<div class="shelf-grid">
+<div class="shelf-grid" data-dpad-grid>
     {% for album in albums_page %}
     <a href="{% url 'album-detail' album.id %}" class="album-card">
         <div class="card-frame">

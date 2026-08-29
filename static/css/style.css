@@ -4789,3 +4789,98 @@ a.tab-stub {
     }
 }
 
+/* ============================================================
+   ANDROID TV / D-PAD NAVIGATION
+============================================================ */
+body.dpad-active :focus {
+    outline: none;
+}
+
+body.dpad-active :focus-visible,
+body.tv-mode :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+}
+
+body.tv-mode .media-card:focus-visible,
+body.tv-mode .album-card:focus-visible,
+body.tv-mode .carousel-card:focus-visible,
+body.dpad-active .media-card:focus-visible,
+body.dpad-active .album-card:focus-visible,
+body.dpad-active .carousel-card:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 5px;
+    transform: scale(1.04);
+    z-index: 2;
+    position: relative;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(196, 102, 28, 0.15);
+}
+
+body.tv-mode .hero-btn-primary:focus-visible,
+body.tv-mode .hero-btn-ghost:focus-visible,
+body.dpad-active .hero-btn-primary:focus-visible,
+body.dpad-active .hero-btn-ghost:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+    box-shadow: var(--shadow-md), 0 0 0 4px rgba(196, 102, 28, 0.12);
+}
+
+body.tv-mode .nav-links a:focus-visible,
+body.tv-mode .browse-filter-pill:focus-visible,
+body.tv-mode .tab-stub:focus-visible,
+body.tv-mode .page-btn:focus-visible,
+body.tv-mode .page-num:focus-visible,
+body.dpad-active .nav-links a:focus-visible,
+body.dpad-active .browse-filter-pill:focus-visible,
+body.dpad-active .tab-stub:focus-visible,
+body.dpad-active .page-btn:focus-visible,
+body.dpad-active .page-num:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(196, 102, 28, 0.1);
+}
+
+body.tv-mode .carousel-btn:focus-visible,
+body.dpad-active .carousel-btn:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    background: var(--accent-bg);
+    border-color: var(--accent);
+}
+
+body.tv-mode .btn-nav:focus-visible,
+body.dpad-active .btn-nav:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+}
+
+body.tv-mode .ledger-row:focus-visible,
+body.dpad-active .ledger-row:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: -2px;
+    background: var(--accent-bg);
+}
+
+body.tv-mode .media-card,
+body.tv-mode .album-card,
+body.tv-mode .carousel-card {
+    transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+body.tv-mode .container {
+    scroll-padding-top: calc(var(--nav-h) + 24px);
+}
+
+body.tv-mode .site-nav .nav-links a,
+body.tv-mode .browse-filter-pill,
+body.tv-mode .tab-stub,
+body.tv-mode .page-btn,
+body.tv-mode .page-num,
+body.tv-mode .carousel-btn,
+body.tv-mode .hero-btn-primary,
+body.tv-mode .hero-btn-ghost,
+body.tv-mode .btn-nav,
+body.tv-mode .back-btn {
+    scroll-margin: 12px;
+}
+

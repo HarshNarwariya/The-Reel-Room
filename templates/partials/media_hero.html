@@ -54,8 +54,8 @@
             <div class="hero-progress-bar" style="width:{{ hero_record|progress_percent }}%;"></div>
         </div>
         {% endif %}
-        <div class="hero-actions">
-            <a href="{% url 'player' media.id %}" class="hero-btn-primary">
+        <div class="hero-actions" data-dpad-row>
+            <a href="{% url 'player' media.id %}" class="hero-btn-primary" data-dpad-priority="2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
                 {% if media.media_type == "video" or media.media_type == "audio" %}Resume{% else %}Open{% endif %}
             </a>

@@ -30,7 +30,7 @@
     <span class="section-label">Albums</span>
     <span class="catalog-count mono"><strong>{{ albums_page.paginator.count }}</strong> match{{ albums_page.paginator.count|pluralize:"es" }}</span>
 </div>
-<div class="shelf-grid">
+<div class="shelf-grid" data-dpad-grid>
     {% for album in albums_page %}
     <a href="{% url 'album-detail' album.id %}" class="album-card">
         <div class="card-frame">
@@ -65,7 +65,7 @@
     <span class="col-label">Title &amp; Album</span>
     <span class="col-label col-right col-duration">Duration</span>
 </div>
-<div class="ledger">
+<div class="ledger" data-dpad-grid>
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="ledger-row">
         <div class="row-index mono">{{ forloop.counter|page_row_index:media_page|stringformat:"03d" }}</div>
@@ -106,7 +106,7 @@
     <div class="section-hd" style="margin-bottom:14px;">
         <span class="section-label">Quick filters</span>
     </div>
-    <div class="tabs">
+    <div class="tabs" data-dpad-row>
         <a href="{% url 'browse' %}?type=video" class="tab-stub">Video</a>
         <a href="{% url 'browse' %}?type=audio" class="tab-stub">Audio</a>
         <a href="{% url 'browse' %}?type=image" class="tab-stub">Image</a>

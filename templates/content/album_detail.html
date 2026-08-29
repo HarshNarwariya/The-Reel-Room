@@ -38,7 +38,7 @@
 </div>
 
 {% if media_counts.all %}
-<div class="tabs">
+<div class="tabs" data-dpad-row>
     <a href="{% url 'album-detail' album.id %}?type=all" class="tab-stub{% if active_type == 'all' %} active{% endif %}">
         All <span class="count mono">{{ media_counts.all }}</span>
     </a>
@@ -65,7 +65,7 @@
 </div>
 
 {% if media_page.object_list %}
-<div class="media-grid">
+<div class="media-grid" data-dpad-grid>
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
         <div class="media-card-art">

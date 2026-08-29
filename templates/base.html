@@ -12,8 +12,8 @@
 </head>
 <body>
     {% if user.is_authenticated %}
-    <nav class="site-nav">
-        <a href="{% url 'home' %}" class="nav-brand">Hyaku<em>take</em></a>
+    <nav class="site-nav" data-dpad-zone="nav">
+        <a href="{% url 'home' %}" class="nav-brand" data-dpad-priority="1">Hyaku<em>take</em></a>
         <form class="nav-search" action="{% url 'search' %}" method="get" role="search">
             <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
@@ -21,7 +21,7 @@
             </svg>
             <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search albums &amp; media…" aria-label="Search">
         </form>
-        <div class="nav-links">
+        <div class="nav-links" data-dpad-row>
             <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Shelf</a>
             <a href="{% url 'browse' %}" {% if request.resolver_match.url_name == 'browse' %}class="active"{% endif %}>Browse</a>
             <a href="{% url 'archive' %}" {% if request.resolver_match.url_name == 'archive' %}class="active"{% endif %}>Archive</a>
@@ -47,6 +47,7 @@
     </main>
 
     <script src="/static/js/carousel.js"></script>
+    <script src="/static/js/dpad.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

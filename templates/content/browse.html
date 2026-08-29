@@ -19,7 +19,7 @@
 </div>
 
 {% comment %} Filter tabs {% endcomment %}
-<div class="browse-filter-bar">
+<div class="browse-filter-bar" data-dpad-row>
     <a href="{% url 'browse' %}?type=all" class="browse-filter-pill{% if active_type == 'all' %} active{% endif %}">
         <span>All</span>
         <span class="pill-count mono">{{ media_counts.all }}</span>
@@ -48,7 +48,7 @@
 
 {% comment %} Media poster grid {% endcomment %}
 {% if media_page.object_list %}
-<div class="media-grid">
+<div class="media-grid" data-dpad-grid>
     {% for item in media_page %}
     <a href="{% url 'player' item.id %}" class="media-card" style="animation-delay:calc({{ forloop.counter0 }} * 0.03s)">
         <div class="media-card-art">
