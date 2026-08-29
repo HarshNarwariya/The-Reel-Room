@@ -45,6 +45,14 @@
     --r-lg: 12px;
     --nav-h: 62px;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    /* D-pad / TV focus ring */
+    --dpad-focus-border: rgba(255, 251, 246, 0.98);
+    --dpad-focus-glow:   rgba(196, 102, 28, 0.55);
+    --dpad-focus-glow-soft: rgba(196, 102, 28, 0.22);
+    --dpad-focus-shadow:
+        0 0 0 2px var(--dpad-focus-border),
+        0 0 14px 2px var(--dpad-focus-glow),
+        0 0 28px 6px var(--dpad-focus-glow-soft);
 }
 
 /* ============================================================
@@ -4792,14 +4800,15 @@ a.tab-stub {
 /* ============================================================
    ANDROID TV / D-PAD NAVIGATION
 ============================================================ */
-body.dpad-active :focus {
+body.dpad-active :focus,
+body.tv-mode :focus {
     outline: none;
 }
 
 body.dpad-active :focus-visible,
 body.tv-mode :focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
+    outline: none;
+    box-shadow: var(--dpad-focus-shadow);
 }
 
 body.tv-mode .media-card:focus-visible,
@@ -4808,21 +4817,26 @@ body.tv-mode .carousel-card:focus-visible,
 body.dpad-active .media-card:focus-visible,
 body.dpad-active .album-card:focus-visible,
 body.dpad-active .carousel-card:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 5px;
     transform: scale(1.04);
     z-index: 2;
     position: relative;
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(196, 102, 28, 0.15);
+    border-radius: var(--r-md);
+    box-shadow:
+        var(--dpad-focus-shadow),
+        var(--shadow-md);
 }
 
 body.tv-mode .hero-btn-primary:focus-visible,
 body.tv-mode .hero-btn-ghost:focus-visible,
 body.dpad-active .hero-btn-primary:focus-visible,
-body.dpad-active .hero-btn-ghost:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
-    box-shadow: var(--shadow-md), 0 0 0 4px rgba(196, 102, 28, 0.12);
+body.dpad-active .hero-btn-ghost:focus-visible,
+body.tv-mode .btn-nav:focus-visible,
+body.dpad-active .btn-nav:focus-visible,
+body.tv-mode .back-btn:focus-visible,
+body.dpad-active .back-btn:focus-visible,
+body.tv-mode .btn-search:focus-visible,
+body.dpad-active .btn-search:focus-visible {
+    box-shadow: var(--dpad-focus-shadow);
 }
 
 body.tv-mode .nav-links a:focus-visible,
@@ -4835,36 +4849,65 @@ body.dpad-active .browse-filter-pill:focus-visible,
 body.dpad-active .tab-stub:focus-visible,
 body.dpad-active .page-btn:focus-visible,
 body.dpad-active .page-num:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 3px;
-    box-shadow: 0 0 0 4px rgba(196, 102, 28, 0.1);
+    box-shadow: var(--dpad-focus-shadow);
 }
 
 body.tv-mode .carousel-btn:focus-visible,
 body.dpad-active .carousel-btn:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 3px;
     background: var(--accent-bg);
-    border-color: var(--accent);
+    box-shadow: var(--dpad-focus-shadow);
 }
 
-body.tv-mode .btn-nav:focus-visible,
-body.dpad-active .btn-nav:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
+body.tv-mode .nav-search input:focus-visible,
+body.dpad-active .nav-search input:focus-visible,
+body.tv-mode .search-hero input:focus-visible,
+body.dpad-active .search-hero input:focus-visible {
+    border-color: var(--dpad-focus-border);
+    box-shadow: var(--dpad-focus-shadow);
 }
 
 body.tv-mode .ledger-row:focus-visible,
 body.dpad-active .ledger-row:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: -2px;
     background: var(--accent-bg);
+    box-shadow:
+        inset 0 0 0 1px var(--dpad-focus-border),
+        0 0 14px 2px var(--dpad-focus-glow),
+        0 0 28px 6px var(--dpad-focus-glow-soft);
+}
+
+body.tv-mode .resume-btn:focus-visible,
+body.dpad-active .resume-btn:focus-visible,
+body.tv-mode .mode-stub:focus-visible,
+body.dpad-active .mode-stub:focus-visible,
+body.tv-mode .desc-toggle:focus-visible,
+body.dpad-active .desc-toggle:focus-visible {
+    box-shadow: var(--dpad-focus-shadow);
 }
 
 body.tv-mode .media-card,
 body.tv-mode .album-card,
-body.tv-mode .carousel-card {
-    transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+body.tv-mode .carousel-card,
+body.dpad-active .media-card,
+body.dpad-active .album-card,
+body.dpad-active .carousel-card {
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+body.tv-mode .nav-links a,
+body.tv-mode .browse-filter-pill,
+body.tv-mode .tab-stub,
+body.tv-mode .page-btn,
+body.tv-mode .hero-btn-primary,
+body.tv-mode .hero-btn-ghost,
+body.tv-mode .btn-nav,
+body.dpad-active .nav-links a,
+body.dpad-active .browse-filter-pill,
+body.dpad-active .tab-stub,
+body.dpad-active .page-btn,
+body.dpad-active .hero-btn-primary,
+body.dpad-active .hero-btn-ghost,
+body.dpad-active .btn-nav {
+    transition: box-shadow 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
 }
 
 body.tv-mode .container {
@@ -4880,7 +4923,17 @@ body.tv-mode .carousel-btn,
 body.tv-mode .hero-btn-primary,
 body.tv-mode .hero-btn-ghost,
 body.tv-mode .btn-nav,
-body.tv-mode .back-btn {
+body.tv-mode .back-btn,
+body.dpad-active .site-nav .nav-links a,
+body.dpad-active .browse-filter-pill,
+body.dpad-active .tab-stub,
+body.dpad-active .page-btn,
+body.dpad-active .page-num,
+body.dpad-active .carousel-btn,
+body.dpad-active .hero-btn-primary,
+body.dpad-active .hero-btn-ghost,
+body.dpad-active .btn-nav,
+body.dpad-active .back-btn {
     scroll-margin: 12px;
 }
 
