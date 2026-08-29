@@ -26,6 +26,18 @@
     var active = false;
     var tvMode = false;
     var lastNonInputFocus = null;
+    var navigating = false;
+
+    var HORIZONTAL_SCROLL_SELECTORS = [
+        "[data-carousel-track]",
+        ".browse-filter-bar",
+        ".tabs",
+        ".nav-links",
+        ".pagination",
+        ".carousel-nav-btns",
+        ".search-hero",
+        ".site-nav",
+    ];
 
     function detectTV() {
         var ua = navigator.userAgent || "";
@@ -39,8 +51,101 @@
         }
     }
 
+    function isRadioInput(el) {
+        return !!(el && el.tagName === "INPUT" && el.type === "radio");
+    }
+
+    function isCheckboxInput(el) {
+        return !!(el && el.tagName === "INPUT" && el.type === "checkbox");
+    }
+
+    function isChoiceInput(el) {
+        return isRadioInput(el) || isCheckboxInput(el);
+    }
+
+    function getRadioGroupInputs(radio) {
+        var container = radio.closest("[data-dpad-radio-group], .settings-options, fieldset");
+        var radios;
+
+        if (container) {
+            radios = container.querySelectorAll('input[type="radio"]');
+        } else if (radio.name) {
+            radios = document.querySelectorAll('input[type="radio"][name="' + radio.name + '"]');
+        } else {
+            return [radio];
+        }
+
+        return Array.prototype.filter.call(radios, function (el) {
+            return el.name === radio.name && isFocusable(el);
+        });
+    }
+
+    function syncChoiceFocusVisual(input) {
+        document.querySelectorAll(".settings-option.is-dpad-focused").forEach(function (el) {
+            el.classList.remove("is-dpad-focused");
+        });
+
+        if (!input || !isChoiceInput(input)) return;
+
+        var label = input.closest(".settings-option, label");
+        if (label) label.classList.add("is-dpad-focused");
+    }
+
+    function handleChoiceInputKeyDown(e, action) {
+        var input = document.activeElement;
+        if (!isChoiceInput(input)) return false;
+
+        if (action === "select") {
+            e.preventDefault();
+            if (isCheckboxInput(input)) {
+                input.checked = !input.checked;
+            } else {
+                input.checked = true;
+            }
+            return true;
+        }
+
+        if (action === "back") {
+            e.preventDefault();
+            exitInput(input);
+            return true;
+        }
+
+        if (isRadioInput(input) && (action === "up" || action === "down" || action === "left" || action === "right")) {
+            var radios = getRadioGroupInputs(input);
+            var idx = radios.indexOf(input);
+            if (idx === -1) return false;
+
+            var nextIdx = idx;
+            if (action === "down" || action === "right") {
+                nextIdx = Math.min(idx + 1, radios.length - 1);
+            } else if (action === "up" || action === "left") {
+                nextIdx = Math.max(idx - 1, 0);
+            }
+
+            if (nextIdx !== idx) {
+                e.preventDefault();
+                setFocus(radios[nextIdx]);
+                return true;
+            }
+
+            e.preventDefault();
+            exitInput(input, action);
+            return true;
+        }
+
+        if (isCheckboxInput(input) && (action === "up" || action === "down" || action === "left" || action === "right")) {
+            e.preventDefault();
+            exitInput(input, action);
+            return true;
+        }
+
+        return false;
+    }
+
     function isEditable(el) {
         if (!el) return false;
+        if (isChoiceInput(el)) return true;
         var tag = el.tagName;
         return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
     }
@@ -87,6 +192,7 @@
             ".player-nav-row",
             ".playback-mode",
             ".search-hero",
+            ".settings-actions",
         ];
 
         for (var i = 0; i < rowSelectors.length; i++) {
@@ -115,13 +221,23 @@
         return false;
     }
 
+    function sameRadioGroup(a, b) {
+        if (!isRadioInput(a) || !isRadioInput(b)) return false;
+        if (a.name !== b.name) return false;
+        var groupA = a.closest("[data-dpad-radio-group], .settings-options, fieldset");
+        var groupB = b.closest("[data-dpad-radio-group], .settings-options, fieldset");
+        return groupA && groupB && groupA === groupB;
+    }
+
     function directionAllowed(current, candidate, direction) {
         if (direction === "left" || direction === "right") {
             if (sameCarouselTrack(current, candidate)) return true;
             if (sameRowGroup(current, candidate)) return true;
+            if (sameRadioGroup(current, candidate)) return true;
         }
         if (direction === "up" || direction === "down") {
             if (sameGrid(current, candidate)) return true;
+            if (sameRadioGroup(current, candidate)) return true;
         }
         return true;
     }
@@ -170,6 +286,9 @@
             if (sameGrid(current, el) && (direction === "up" || direction === "down")) {
                 groupBonus = -60;
             }
+            if (sameRadioGroup(current, el) && (direction === "up" || direction === "down")) {
+                groupBonus = -100;
+            }
 
             var score = primary + secondary * 2.4 + groupBonus;
             if (score < bestScore) {
@@ -181,45 +300,179 @@
         return best;
     }
 
-    function scrollIntoViewSoft(el) {
-        if (!el) return;
+    function isInSiteHeader(el) {
+        return !!(el && el.closest(".site-nav"));
+    }
 
-        var carouselTrack = el.closest("[data-carousel-track]");
-        if (carouselTrack) {
-            var trackRect = carouselTrack.getBoundingClientRect();
-            var elRect = el.getBoundingClientRect();
-            if (elRect.left < trackRect.left + 8) {
-                carouselTrack.scrollLeft -= trackRect.left - elRect.left + 16;
-            } else if (elRect.right > trackRect.right - 8) {
-                carouselTrack.scrollLeft += elRect.right - trackRect.right + 16;
-            }
-        }
-
-        var horizontalRow = el.closest(
-            ".browse-filter-bar, .tabs, .nav-links, .pagination, .carousel-nav-btns"
-        );
-        if (horizontalRow && horizontalRow.scrollWidth > horizontalRow.clientWidth) {
-            var rowRect = horizontalRow.getBoundingClientRect();
-            var itemRect = el.getBoundingClientRect();
-            if (itemRect.left < rowRect.left + 8) {
-                horizontalRow.scrollLeft -= rowRect.left - itemRect.left + 16;
-            } else if (itemRect.right > rowRect.right - 8) {
-                horizontalRow.scrollLeft += itemRect.right - rowRect.right + 16;
-            }
-        }
+    function scrollPageToTop() {
+        if (window.scrollY <= 2 && window.scrollX <= 2) return;
 
         try {
-            el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+            window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
         } catch (err) {
-            el.scrollIntoView(false);
+            window.scrollTo(0, 0);
         }
+    }
+
+    function getViewportPadding() {
+        var nav = document.querySelector(".site-nav");
+        var navHeight = nav ? nav.getBoundingClientRect().height : 62;
+        var focusPad = 28;
+        return {
+            top: navHeight + 20 + focusPad,
+            bottom: 24 + focusPad,
+            left: 20 + focusPad,
+            right: 20 + focusPad,
+        };
+    }
+
+    function getVisibleRect(padding) {
+        return {
+            top: padding.top,
+            left: padding.left,
+            right: window.innerWidth - padding.right,
+            bottom: window.innerHeight - padding.bottom,
+            width: window.innerWidth - padding.left - padding.right,
+            height: window.innerHeight - padding.top - padding.bottom,
+        };
+    }
+
+    function isFullyVisible(el, padding) {
+        var rect = el.getBoundingClientRect();
+        var view = getVisibleRect(padding);
+        return (
+            rect.top >= view.top &&
+            rect.bottom <= view.bottom &&
+            rect.left >= view.left &&
+            rect.right <= view.right
+        );
+    }
+
+    function findHorizontalScroller(el) {
+        for (var i = 0; i < HORIZONTAL_SCROLL_SELECTORS.length; i++) {
+            var container = el.closest(HORIZONTAL_SCROLL_SELECTORS[i]);
+            if (!container) continue;
+            if (container.scrollWidth > container.clientWidth + 1) return container;
+        }
+        return null;
+    }
+
+    function scrollHorizontalContainer(container, el, pad) {
+        var containerRect = container.getBoundingClientRect();
+        var elRect = el.getBoundingClientRect();
+        var targetLeft = container.scrollLeft;
+
+        if (container.matches("[data-carousel-track]")) {
+            var elCenter = elRect.left + elRect.width / 2;
+            var containerCenter = containerRect.left + containerRect.width / 2;
+            targetLeft += elCenter - containerCenter;
+        } else if (elRect.left < containerRect.left + pad) {
+            targetLeft -= containerRect.left - elRect.left + pad;
+        } else if (elRect.right > containerRect.right - pad) {
+            targetLeft += elRect.right - containerRect.right + pad;
+        } else {
+            return;
+        }
+
+        targetLeft = Math.max(0, Math.min(targetLeft, container.scrollWidth - container.clientWidth));
+
+        try {
+            container.scrollTo({ left: targetLeft, behavior: "smooth" });
+        } catch (err) {
+            container.scrollLeft = targetLeft;
+        }
+    }
+
+    function scrollPageToElement(el, padding) {
+        var rect = el.getBoundingClientRect();
+        var view = getVisibleRect(padding);
+        var nextX = window.scrollX;
+        var nextY = window.scrollY;
+
+        if (rect.top < view.top) {
+            nextY += rect.top - view.top;
+        } else if (rect.bottom > view.bottom) {
+            nextY += rect.bottom - view.bottom;
+        } else if (rect.height < view.height * 0.85) {
+            var elCenterY = rect.top + rect.height / 2;
+            var viewCenterY = view.top + view.height / 2;
+            var offsetY = elCenterY - viewCenterY;
+            if (Math.abs(offsetY) > view.height * 0.2) {
+                nextY += offsetY;
+            }
+        }
+
+        if (rect.left < view.left) {
+            nextX += rect.left - view.left;
+        } else if (rect.right > view.right) {
+            nextX += rect.right - view.right;
+        }
+
+        nextX = Math.max(0, nextX);
+        nextY = Math.max(0, nextY);
+
+        if (nextX === window.scrollX && nextY === window.scrollY) return;
+
+        try {
+            window.scrollTo({ left: nextX, top: nextY, behavior: "smooth" });
+        } catch (err) {
+            window.scrollTo(nextX, nextY);
+        }
+    }
+
+    function ensureVisible(el) {
+        if (!el || !el.isConnected) return;
+
+        if (isInSiteHeader(el)) {
+            scrollPageToTop();
+            var headerScroller = findHorizontalScroller(el);
+            if (headerScroller) {
+                scrollHorizontalContainer(headerScroller, el, 16);
+                window.requestAnimationFrame(function () {
+                    scrollHorizontalContainer(headerScroller, el, 16);
+                });
+            }
+            return;
+        }
+
+        var padding = getViewportPadding();
+        var horizontal = findHorizontalScroller(el);
+
+        if (horizontal) {
+            scrollHorizontalContainer(horizontal, el, 16);
+        }
+
+        window.requestAnimationFrame(function () {
+            if (horizontal) {
+                scrollHorizontalContainer(horizontal, el, 16);
+            }
+
+            if (!isFullyVisible(el, padding)) {
+                scrollPageToElement(el, padding);
+            }
+
+            window.requestAnimationFrame(function () {
+                if (!isFullyVisible(el, padding)) {
+                    scrollPageToElement(el, padding);
+                }
+            });
+        });
+    }
+
+    function scrollIntoViewSoft(el) {
+        ensureVisible(el);
     }
 
     function setFocus(el) {
         if (!el) return;
+        navigating = true;
         el.focus({ preventScroll: true });
-        scrollIntoViewSoft(el);
+        syncChoiceFocusVisual(el);
         document.body.classList.add("dpad-active");
+        ensureVisible(el);
+        window.setTimeout(function () {
+            navigating = false;
+        }, 180);
     }
 
     function getInitialFocusTarget() {
@@ -230,7 +483,7 @@
         if (!main) return null;
 
         var preferred = main.querySelector(
-            ".hero-btn-primary, .carousel-card, .album-card, .media-card, .browse-filter-pill.active, .tab-stub.active, .back-btn"
+            ".hero-btn-primary, .carousel-card, .album-card, .media-card, .browse-filter-pill.active, .tab-stub.active, .back-btn, .settings-options input[type=radio]:checked, .settings-options input[type=radio]"
         );
         if (preferred && isFocusable(preferred)) return preferred;
 
@@ -276,12 +529,15 @@
         }
 
         input.blur();
+        syncChoiceFocusVisual(null);
         if (next && next !== input) setFocus(next);
     }
 
     function handleInputKeyDown(e, action) {
         var input = document.activeElement;
         if (!isEditable(input)) return false;
+
+        if (handleChoiceInputKeyDown(e, action)) return true;
 
         if (action === "back") {
             e.preventDefault();
@@ -412,9 +668,11 @@
         if (isFocusable(el) && !isEditable(el)) {
             lastNonInputFocus = el;
         }
+        syncChoiceFocusVisual(el);
         if (!active && !tvMode) return;
         if (!isFocusable(el)) return;
-        scrollIntoViewSoft(el);
+        if (navigating) return;
+        ensureVisible(el);
     }
 
     function init() {

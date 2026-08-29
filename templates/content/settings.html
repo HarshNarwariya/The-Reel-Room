@@ -24,7 +24,7 @@
                 {% endif %}
             </p>
 
-            <div class="settings-options">
+            <div class="settings-options" data-dpad-radio-group>
                 {% for radio in form.preview_mode %}
                 <label class="settings-option">
                     {{ radio.tag }}
@@ -55,7 +55,7 @@
         </p>
         {% endif %}
 
-        <div class="settings-actions">
+        <div class="settings-actions" data-dpad-row>
             <button type="submit" class="btn-nav settings-save-btn">Save settings</button>
         </div>
     </form>

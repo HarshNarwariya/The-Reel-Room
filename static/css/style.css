@@ -1140,7 +1140,35 @@ a.tab-stub {
     border-radius: var(--r-md);
     background: var(--surface-2);
     cursor: pointer;
-    transition: border-color 0.18s ease, background 0.18s ease;
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.settings-option.is-dpad-focused:not(:has(input:checked)),
+body.dpad-active .settings-option:has(input:focus-visible):not(:has(input:checked)),
+body.tv-mode .settings-option:has(input:focus-visible):not(:has(input:checked)) {
+    outline: none;
+    border-color: rgba(255, 251, 246, 0.98);
+    transform: scale(var(--dpad-focus-scale));
+    box-shadow: var(--dpad-focus-shadow);
+    z-index: 2;
+    position: relative;
+    background: var(--surface);
+}
+
+.settings-option.is-dpad-focused:has(input:checked),
+body.dpad-active .settings-option:has(input:focus-visible):has(input:checked),
+body.tv-mode .settings-option:has(input:focus-visible):has(input:checked) {
+    outline: none;
+    transform: scale(var(--dpad-focus-scale));
+    box-shadow: var(--dpad-focus-shadow);
+    z-index: 2;
+    position: relative;
+}
+
+body.dpad-active .settings-option input:focus-visible,
+body.tv-mode .settings-option input:focus-visible {
+    outline: none;
+    box-shadow: none;
 }
 
 .settings-option:has(input:checked) {
@@ -4911,7 +4939,21 @@ body.dpad-active .btn-nav {
 }
 
 body.tv-mode .container {
-    scroll-padding-top: calc(var(--nav-h) + 24px);
+    scroll-padding-top: calc(var(--nav-h) + 36px);
+}
+
+body.dpad-active,
+body.tv-mode {
+    scroll-padding-top: calc(var(--nav-h) + 36px);
+    scroll-padding-bottom: 36px;
+    scroll-padding-left: 24px;
+    scroll-padding-right: 24px;
+}
+
+body.dpad-active .carousel-track,
+body.tv-mode .carousel-track {
+    padding-top: 8px;
+    padding-bottom: 12px;
 }
 
 body.tv-mode .site-nav .nav-links a,
@@ -4933,7 +4975,13 @@ body.dpad-active .carousel-btn,
 body.dpad-active .hero-btn-primary,
 body.dpad-active .hero-btn-ghost,
 body.dpad-active .btn-nav,
-body.dpad-active .back-btn {
-    scroll-margin: 12px;
+body.dpad-active .back-btn,
+body.dpad-active .media-card,
+body.dpad-active .album-card,
+body.dpad-active .carousel-card,
+body.tv-mode .media-card,
+body.tv-mode .album-card,
+body.tv-mode .carousel-card {
+    scroll-margin: 20px;
 }
 
